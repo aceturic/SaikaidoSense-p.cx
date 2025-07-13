@@ -33,6 +33,7 @@ ui_state.hitlog_checkbox = ui_state.panel:add_checkbox("Hitlog")
 ui_state.speclist_checkbox = ui_state.panel:add_checkbox("Spectator List")
 ui_state.c4timer_checkbox = ui_state.panel:add_checkbox("C4")
 ui_state.radar_checkbox = ui_state.panel:add_checkbox("Radar")
+ui_state.anti_flash_checkbox = ui_state.panel:add_checkbox("Enable Anti-Flash")
 
 ui_state.panel:add_text("-----Hitlog Settings")
 ui_state.panel:add_text("Background Color")
@@ -127,6 +128,7 @@ ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
             speclist_checkbox = ui_state.speclist_checkbox:get(),
             c4timer_checkbox = ui_state.c4timer_checkbox:get(),
             radar_checkbox = ui_state.radar_checkbox:get(),
+            anti_flash_checkbox = ui_state.anti_flash_checkbox:get(),
         },
         hitlog = {
             bg_color = {ui_state.htcolor_picker:get()},
@@ -210,6 +212,7 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
         ui_state.hitsound_checkbox:set(config.untrusted.hitsound)
         ui_state.hitlog_checkbox:set(config.untrusted.hitlog)
         ui_state.speclist_checkbox:set(config.untrusted.speclist_checkbox)
+        ui_state.anti_flash_checkbox:set(config.untrusted.anti_flash_checkbox)
         if config.untrusted.c4timer_checkbox ~= nil then
             ui_state.c4timer_checkbox:set(config.untrusted.c4timer_checkbox)
         end
@@ -415,6 +418,7 @@ local offsets = {
     m_nBombSite = 0xF94,
     m_bBeingDefused = 0xFCC,
     m_bBombDefused = 0xFE4,
+    m_flFlashDuration = 0x140C
 }
 
 local g = {
@@ -1431,6 +1435,20 @@ local function update_bomb_panel()
     end
 end
 
+
+function handle_anti_flash()
+    if not (ui_state.utft_checkbox:get() and ui_state.anti_flash_checkbox:get()) then return end
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
+    local local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if not local_pawn or local_pawn == 0 then return end
+    local flash_address = local_pawn + offsets.m_flFlashDuration
+    local current_flash_duration = proc.read_float(flash_address)
+    if current_flash_duration > 0 then
+        proc.write_float(flash_address, 0.0)
+    end
+end
+
 engine.register_on_engine_tick(function()
     if ui_state and ui_state.specpos and not speclist_dragging then
         local val = ui_state.specpos:get()
@@ -1456,6 +1474,7 @@ engine.register_on_engine_tick(function()
     draw_spectators()
     update_bomb_panel()
     draw_bomb_panel()
+    handle_anti_flash() 
 
     config.espEnabled = ui_state.esp_checkbox and ui_state.esp_checkbox:get() or false
     config.skeletonRendering = ui_state.skeleton_checkbox and ui_state.skeleton_checkbox:get() or false
