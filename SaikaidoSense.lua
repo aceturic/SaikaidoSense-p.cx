@@ -1,3 +1,4 @@
+proc.attach_by_name("cs2.exe")
 local ui_state = {}
 
 local tab = gui.get_tab("lua")
@@ -65,6 +66,9 @@ ui_state.esp_checkbox = ui_state.panel:add_checkbox("Enable ESP")
 ui_state.skeleton_checkbox = ui_state.panel:add_checkbox("Skeleton")
 ui_state.espbox_checkbox = ui_state.panel:add_checkbox("ESP Box")
 ui_state.espname_checkbox = ui_state.panel:add_checkbox("ESP Name")
+ui_state.enable_weapon_esp = ui_state.panel:add_checkbox("Show Dropped Weapons")
+ui_state.enable_projectile_esp = ui_state.panel:add_checkbox("Show Grenades")
+ui_state.enable_chicken_esp = ui_state.panel:add_checkbox("Show Chickens")
 ui_state.glow_checkbox = ui_state.panel:add_checkbox("Glow{MISC Should be enabled}")
 
 ui_state.panel:add_text("Box Color Picker")
@@ -418,7 +422,9 @@ local offsets = {
     m_nBombSite = 0xF94,
     m_bBeingDefused = 0xFCC,
     m_bBombDefused = 0xFE4,
-    m_flFlashDuration = 0x140C
+    m_flFlashDuration = 0x140C,
+    m_vecAbsOrigin = 0xD0,  
+    m_hOwnerEntity = 0x440       -- C_BaseEntity
 }
 
 local g = {
@@ -1023,7 +1029,7 @@ engine.register_on_engine_tick(function()
     end
 
     if ui_state.utft_checkbox:get() then
-        process.is_open = proc.attach_by_name("cs2.exe")
+        process.is_open = proc.is_attached()
         process.client_dll = proc.find_module("client.dll") or 0
 
         if not process.is_open or process.client_dll == 0 then return end
@@ -1360,7 +1366,7 @@ local function update_bomb_panel()
         return
     end
 
-    if not proc.attach_by_name("cs2.exe") or proc.did_exit() then
+    if not proc.is_attached() or proc.did_exit() then
         bomb_panel_target_alpha = 0
         return
     end
@@ -1469,7 +1475,6 @@ engine.register_on_engine_tick(function()
             end
         end
     end
-
     update_spectator_list()
     draw_spectators()
     update_bomb_panel()
@@ -1483,7 +1488,7 @@ engine.register_on_engine_tick(function()
 
     if not config.espEnabled then return end
 
-    if not proc.attach_by_name("cs2.exe") then return end
+    if not proc.is_attached() then return end
     if proc.did_exit() then return end
 
     local client_dll = proc.find_module("client.dll")
@@ -1806,7 +1811,7 @@ local function on_engine_tick()
 end
 
 local function on_script_load_radar()
-    if not proc.attach_by_name("cs2.exe") then
+    if not proc.is_attached() then
         engine.log("Error: Attach to cs2.exe first.", 255, 0, 0, 255)
         return
     end
@@ -1898,7 +1903,7 @@ end
 
 
 local function on_script_load_glow()
-    if not proc.attach_by_name("cs2.exe") then
+    if not proc.is_attached() then
         engine.log("Error: Please attach to the cs2.exe process first.", 255, 0, 0, 255)
         return
     end
@@ -1918,5 +1923,117 @@ local function on_script_load_glow()
 end
 
 on_script_load_glow()
+
+
+
+local WEAPONS_MAP = {
+    ["weapon_ak47"] = "AK-47", ["weapon_m4a1"] = "M4A4", ["weapon_awp"] = "AWP", ["weapon_deagle"] = "Desert Eagle",
+    ["weapon_elite"] = "Dual Berettas", ["weapon_famas"] = "Famas", ["weapon_fiveseven"] = "Five-SeveN",
+    ["weapon_g3sg1"] = "G3SG1", ["weapon_galilar"] = "Galil AR", ["weapon_glock"] = "Glock-18",
+    ["weapon_m4a1_silencer"] = "M4A1-S", ["weapon_mac10"] = "MAC-10", ["weapon_mag7"] = "MAG-7",
+    ["weapon_mp5sd"] = "MP5-SD", ["weapon_mp7"] = "MP7", ["weapon_mp9"] = "MP9", ["weapon_negev"] = "Negev",
+    ["weapon_nova"] = "Nova", ["weapon_p90"] = "P90", ["weapon_p250"] = "P250",
+    ["weapon_hkp2000"] = "P2000", ["weapon_sawedoff"] = "Sawed-Off", ["weapon_scar20"] = "SCAR-20",
+    ["weapon_sg556"] = "SG 553", ["weapon_ssg08"] = "SSG 08", ["weapon_taser"] = "Zeus x27",
+    ["weapon_tec9"] = "Tec-9", ["weapon_ump45"] = "UMP-45", ["weapon_usp_silencer"] = "USP-S",
+    ["weapon_xm1014"] = "XM1014", ["weapon_aug"] = "AUG", ["weapon_bizon"] = "PP-Bizon",
+    ["weapon_cz75a"] = "CZ75-Auto", ["weapon_m249"] = "M249", ["weapon_revolver"] = "R8 Revolver"
+}
+local PROJECTILES_MAP = {
+    ["smokegrenade_projectile"] = "Smoke", ["flashbang_projectile"] = "Flashbang",
+    ["hegrenade_projectile"] = "HE Grenade", ["molotov_projectile"] = "Molotov Fire",
+    ["incendiarygrenade_projectile"] = "Incendiary Fire", ["decoy_projectile"] = "Decoy"
+}
+
+local esp_font = render.create_font("verdana.ttf", 12)
+
+local function world_to_screen(view_matrix, position_3d)
+    local screen_w = view_matrix[13] * position_3d.x + view_matrix[14] * position_3d.y + view_matrix[15] * position_3d.z + view_matrix[16]
+    if screen_w < 0.1 then return nil end
+    local screen_x = view_matrix[1] * position_3d.x + view_matrix[2] * position_3d.y + view_matrix[3] * position_3d.z + view_matrix[4]
+    local screen_y = view_matrix[5] * position_3d.x + view_matrix[6] * position_3d.y + view_matrix[7] * position_3d.z + view_matrix[8]
+    local inv_w = 1.0 / screen_w
+    local sx, sy = screen_x * inv_w, screen_y * inv_w
+    local screen_width, screen_height = render.get_viewport_size()
+    local x, y = (screen_width / 2.0) + (sx * screen_width) / 2.0, (screen_height / 2.0) - (sy * screen_height) / 2.0
+    return vec2(x, y)
+end
+
+local function draw_text_with_outline(font, text, x, y, r, g, b, a)
+    if not font then return end 
+    local int_x, int_y = math.floor(x), math.floor(y)
+    render.draw_text(font, text, int_x-1, int_y, 0, 0, 0, a, 0,0,0,0,0)
+    render.draw_text(font, text, int_x+1, int_y, 0, 0, 0, a, 0,0,0,0,0)
+    render.draw_text(font, text, int_x, int_y-1, 0, 0, 0, a, 0,0,0,0,0)
+    render.draw_text(font, text, int_x, int_y+1, 0, 0, 0, a, 0,0,0,0,0)
+    render.draw_text(font, text, int_x, int_y, r, g, b, a, 0,0,0,0,0)
+end
+
+
+
+local function handle_world_esp()
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
+    
+    local view_matrix = {}
+    for i = 0, 15 do table.insert(view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
+
+    for i = 64, 1024 do
+        local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+        if entity_list == 0 then return end
+
+        local list_entry = proc.read_int64(entity_list + 0x8 * ((i >> 9) & 0x7F) + 0x10)
+        if not list_entry or list_entry == 0 then goto continue_loop end
+        
+        local entity = proc.read_int64(list_entry + 120 * (i & 0x1FF))
+        if not entity or entity == 0 then goto continue_loop end
+        
+        local item_info_ptr = proc.read_int64(entity + 0x10)
+        if not item_info_ptr or item_info_ptr == 0 then goto continue_loop end
+
+        local item_type_ptr = proc.read_int64(item_info_ptr + 0x20)
+        if not item_type_ptr or item_type_ptr == 0 then goto continue_loop end
+        
+        local designer_name = proc.read_string(item_type_ptr, 128)
+
+        if not designer_name or designer_name == "" then goto continue_loop end
+
+        local game_scene_node = proc.read_int64(entity + offsets.m_pGameSceneNode)
+        if not game_scene_node or game_scene_node == 0 then goto continue_loop end
+        
+        local entity_origin = vec3.read_float(game_scene_node + offsets.m_vecAbsOrigin)
+        if entity_origin.x == 0 and entity_origin.y == 0 then goto continue_loop end
+
+        local screen_pos = world_to_screen(view_matrix, entity_origin)
+        if not screen_pos then goto continue_loop end
+        
+        if ui_state.enable_weapon_esp:get() then
+            local weapon_name = WEAPONS_MAP[designer_name]
+            if weapon_name then
+                local owner_handle = proc.read_int32(entity + offsets.m_hOwnerEntity)
+                if owner_handle == -1 then
+                    draw_text_with_outline(esp_font, weapon_name, screen_pos.x, screen_pos.y, 255, 255, 255, 255)
+                    goto continue_loop
+                end
+            end
+        end
+
+        if ui_state.enable_projectile_esp:get() then
+            local projectile_name = PROJECTILES_MAP[designer_name]
+            if projectile_name then
+                draw_text_with_outline(esp_font, projectile_name, screen_pos.x, screen_pos.y, 255, 200, 100, 255)
+                goto continue_loop
+            end
+        end
+        
+        if ui_state.enable_chicken_esp:get() and designer_name == "chicken" then
+             draw_text_with_outline(esp_font, "Chicken", screen_pos.x, screen_pos.y, 255, 255, 0, 255)
+        end
+        
+        ::continue_loop::
+    end
+end
+
+engine.register_on_engine_tick(handle_world_esp)
 
 local log_once = {}
