@@ -1,11 +1,13 @@
 proc.attach_by_name("cs2.exe")
 local ui_state = {}
-
 local tab = gui.get_tab("lua")
+local visuals = gui.get_tab("visuals")
+local config = gui.get_tab("settings")
+local legitbot = gui.get_tab("aimbot")
+ui_state.legitbot = legitbot:create_panel("SaikaidoSense Legitbot", true)
+ui_state.legitbot:add_text("-----Under Construction------")
 ui_state.panel = tab:create_panel("SaikaidoSense", true)
 
-ui_state.watermark_unibox = ui_state.panel:add_checkbox("UNI API")
-ui_state.watermark_cs2box = ui_state.panel:add_checkbox("CS2")
 ui_state.watermark_checkbox = ui_state.panel:add_checkbox("Enable Watermark")
 ui_state.crs_checkbox = ui_state.panel:add_checkbox("Enable Crosshair")
 ui_state.utft_checkbox = ui_state.panel:add_checkbox("MISC")
@@ -61,37 +63,45 @@ ui_state.panel:add_text("Header background Color")
 ui_state.speclistheadercolor_picker = ui_state.panel:add_color_picker("Spectator List Header Color Picker", 255, 255, 255, 255)
 ui_state.speclistheadercolor_picker:set(200, 200, 200, 255)
 
-ui_state.panel:add_text("-----ESP Settings")
-ui_state.esp_checkbox = ui_state.panel:add_checkbox("Enable ESP")
-ui_state.skeleton_checkbox = ui_state.panel:add_checkbox("Skeleton")
-ui_state.espbox_checkbox = ui_state.panel:add_checkbox("ESP Box")
-ui_state.espname_checkbox = ui_state.panel:add_checkbox("ESP Name")
-ui_state.enable_weapon_esp = ui_state.panel:add_checkbox("Show Dropped Weapons")
-ui_state.enable_projectile_esp = ui_state.panel:add_checkbox("Show Grenades")
-ui_state.enable_chicken_esp = ui_state.panel:add_checkbox("Show Chickens")
-ui_state.glow_checkbox = ui_state.panel:add_checkbox("Glow{MISC Should be enabled}")
-
-ui_state.panel:add_text("Box Color Picker")
-ui_state.boxcolor_picker = ui_state.panel:add_color_picker("Box Color Picker", 255, 0, 0, 255)
+ui_state.visuals = visuals:create_panel("SaikaidoSense Visuals", true)
+ui_state.visuals:add_text("-----ESP Settings")
+ui_state.esp_checkbox = ui_state.visuals:add_checkbox("Enable ESP")
+ui_state.skeleton_checkbox = ui_state.visuals:add_checkbox("Skeleton")
+ui_state.espbox_checkbox = ui_state.visuals:add_checkbox("ESP Box")
+ui_state.espname_checkbox = ui_state.visuals:add_checkbox("ESP Name")
+ui_state.enable_weapon_esp = ui_state.visuals:add_checkbox("Show Dropped Weapons")
+ui_state.enable_projectile_esp = ui_state.visuals:add_checkbox("Show Grenades")
+ui_state.enable_chicken_esp = ui_state.visuals:add_checkbox("Show Chickens")
+ui_state.enable_bomb_esp = ui_state.visuals:add_checkbox("Enable Bomb ESP")
+ui_state.glow_checkbox = ui_state.visuals:add_checkbox("Glow{MISC Should be enabled}")
+ui_state.visuals:add_text("Box Color Picker")
+ui_state.boxcolor_picker = ui_state.visuals:add_color_picker("Box Color Picker", 255, 0, 0, 255)
 ui_state.boxcolor_picker:set(18, 18, 18, 255)
-ui_state.panel:add_text("Skeleton Color Picker")
-ui_state.skeletoncolor_picker = ui_state.panel:add_color_picker("Skeleton Color Picker", 255, 0, 0, 255)
+ui_state.visuals:add_text("Skeleton Color Picker")
+ui_state.skeletoncolor_picker = ui_state.visuals:add_color_picker("Skeleton Color Picker", 255, 0, 0, 255)
 ui_state.skeletoncolor_picker:set(18, 18, 18, 255)
-ui_state.panel:add_text("Name Color Picker")
-ui_state.espnamecolor_picker = ui_state.panel:add_color_picker("ESP Name Color Picker", 255, 0, 0, 255)
+ui_state.visuals:add_text("Name Color Picker")
+ui_state.espnamecolor_picker = ui_state.visuals:add_color_picker("ESP Name Color Picker", 255, 0, 0, 255)
 ui_state.espnamecolor_picker:set(18, 18, 18, 255)
-ui_state.panel:add_text("CT GLOW")
-ui_state.ctglowcolor_picker = ui_state.panel:add_color_picker("CT GLOW", 0, 0, 255, 255)
+ui_state.visuals:add_text("CT GLOW")
+ui_state.ctglowcolor_picker = ui_state.visuals:add_color_picker("CT GLOW", 0, 0, 255, 255)
 ui_state.ctglowcolor_picker:set(0, 0, 255, 255)
-ui_state.panel:add_text("T GLOW")
-ui_state.tglowcolor_picker = ui_state.panel:add_color_picker("T GLOW", 255, 0, 0, 255)
+ui_state.visuals:add_text("T GLOW")
+ui_state.tglowcolor_picker = ui_state.visuals:add_color_picker("T GLOW", 255, 0, 0, 255)
 ui_state.tglowcolor_picker:set(255, 0, 0, 255)
+ui_state.visuals:add_text("BOMB ESP")
+ui_state.c4_box_color = ui_state.visuals:add_color_picker("Bomb", 255, 50, 50, 255)
 
-ui_state.panel:add_text("-----Design Mode")
-ui_state.des_checkbox = ui_state.panel:add_checkbox("Design Mode")
-ui_state.desmodedim_slider_int = ui_state.panel:add_slider_int("DIM Slider", 0, 10, 3)
+ui_state.nightmode_state = visuals:create_panel("SaikaidoSense Nightmode", true)
 
-ui_state.confpanel = tab:create_panel("SaikaidoSense Config", true)
+ui_state.enabled_checkbox = ui_state.nightmode_state:add_checkbox("Enable Nightmode")
+ui_state.intensity_slider = ui_state.nightmode_state:add_slider_float("Nightmode Intensity", 1.0, 100.0, 50.0)
+
+ui_state.visuals:add_text("-----Design Mode")
+ui_state.des_checkbox = ui_state.visuals:add_checkbox("Design Mode")
+ui_state.desmodedim_slider_int = ui_state.visuals:add_slider_int("DIM Slider", 0, 10, 3)
+
+ui_state.confpanel = config:create_panel("SaikaidoSense Config", true)
 ui_state.wtpos = ui_state.confpanel:add_input_text("Input Field", "default")
 ui_state.specpos = ui_state.confpanel:add_input_text("DEBUG SHIT DONT TOUCH", "default")
 ui_state.bombpanelpos = ui_state.confpanel:add_input_text("Bomb Timer Position", "25,200")
@@ -155,12 +165,12 @@ ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
             skeleton_checkbox = ui_state.skeleton_checkbox:get(),
             espbox_checkbox = ui_state.espbox_checkbox:get(),
             espname_checkbox = ui_state.espname_checkbox:get(),
-            glow = ui_state.glow_checkbox:get(),
             boxcolor = {ui_state.boxcolor_picker:get()},
             skeletoncolor = {ui_state.skeletoncolor_picker:get()},
             espnamecolor = {ui_state.espnamecolor_picker:get()},            
             ctglow = {ui_state.ctglowcolor_picker:get()},
             tglow = {ui_state.tglowcolor_picker:get()},
+            bomb_esp_color = {ui_state.c4_box_color:get()},
         }
     }
     local json_data = json.stringify(config)
@@ -252,12 +262,13 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
         end
     end
 
+
+
     if config.esp then
         ui_state.esp_checkbox:set(config.esp.espEnabled)
         ui_state.skeleton_checkbox:set(config.esp.skeleton_checkbox)
         ui_state.espbox_checkbox:set(config.esp.espbox_checkbox)
         ui_state.espname_checkbox:set(config.esp.espname_checkbox)
-        ui_state.glow_checkbox:set(config.esp.glow)
         if config.esp.boxcolor then
             ui_state.boxcolor_picker:set(table.unpack(config.esp.boxcolor))
         end
@@ -272,6 +283,9 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
         end
         if config.tglow then
             ui_state.tglowcolor_picker:set(table.unpack(config.esp.tglow))
+        end
+        if config.bomb_esp_color then
+            ui_state.c4_box_color:set(table.unpack(config.bomb_esp_color))
         end
     end
 
@@ -396,6 +410,13 @@ local speclist_anim = {
     last_tick = 0,
 }
 
+
+local nightmode_state = {
+    has_saved_original_values = false,
+    original_min_exposure = 1.0,
+    original_max_exposure = 1.0,
+}
+
 local offsets = {
     dwViewMatrix = 0x1A6D280,
     dwLocalPlayerPawn = 0x18580D0,
@@ -424,7 +445,11 @@ local offsets = {
     m_bBombDefused = 0xFE4,
     m_flFlashDuration = 0x140C,
     m_vecAbsOrigin = 0xD0,  
-    m_hOwnerEntity = 0x440       -- C_BaseEntity
+    m_hOwnerEntity = 0x440,      -- C_BaseEntity
+    m_pCameraServices = 0x11E0,  
+    m_hPostProcessing = 0x1F4,     
+    m_flMinExposure = 0xD54,        
+    m_flMaxExposure = 0xD58     
 }
 
 local g = {
@@ -1441,6 +1466,44 @@ local function update_bomb_panel()
     end
 end
 
+local bomb_plant_time = nil          
+local is_bomb_planted_previously = false 
+
+
+function get_c4_screen_position(client_dll)
+    local c4_ptr = proc.read_int64(client_dll + offsets.dwPlantedC4)
+    if not c4_ptr or c4_ptr == 0 then return nil end
+    local planted_c4 = proc.read_int64(c4_ptr)
+    if planted_c4 == 0 then return nil end
+    local c4_node = proc.read_int64(planted_c4 + offsets.m_pGameSceneNode)
+    if c4_node == 0 then return nil end
+    local c4_origin_3d = vec3.read_float(c4_node + offsets.m_vecAbsOrigin)
+    if c4_origin_3d.x == 0 and c4_origin_3d.y == 0 then return nil end
+    local view_matrix = {}
+    for i = 0, 15 do table.insert(view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
+    return world_to_screen(view_matrix, c4_origin_3d)
+end
+
+
+function handle_c4_esp()
+    if not ui_state.enable_bomb_esp:get() then return end
+    if not proc.is_attached() or proc.did_exit() then
+        return
+    end
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then
+        return
+    end
+    local c4_screen_pos = get_c4_screen_position(client_dll)
+    if c4_screen_pos then
+        local r, g, b, a = ui_state.c4_box_color:get()
+        local box_size = 2
+        local text = "BOMB"
+        local text_width, _ = render.measure_text(DisplaySystem.fonts.welcome, text)
+        render.draw_text(DisplaySystem.fonts.welcome, text, c4_screen_pos.x - (text_width / 2), c4_screen_pos.y - 25, r, g, b, a, 2, 0,0,0,150)
+    end
+end
+
 
 function handle_anti_flash()
     if not (ui_state.utft_checkbox:get() and ui_state.anti_flash_checkbox:get()) then return end
@@ -1452,6 +1515,64 @@ function handle_anti_flash()
     local current_flash_duration = proc.read_float(flash_address)
     if current_flash_duration > 0 then
         proc.write_float(flash_address, 0.0)
+    end
+end
+
+
+function handle_nightmode()
+    local is_enabled = ui_state.enabled_checkbox:get()
+
+
+
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
+    
+    local local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if not local_pawn or local_pawn == 0 then
+        if nightmode_state.has_saved_original_values then
+            nightmode_state.has_saved_original_values = false
+        end
+        return
+    end
+
+    local camera_services = proc.read_int64(local_pawn + offsets.m_pCameraServices)
+    if not camera_services or camera_services == 0 then return end
+    
+    local post_processing_handle = proc.read_int32(camera_services + offsets.m_hPostProcessing)
+    if not post_processing_handle or post_processing_handle == -1 then return end
+
+    local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+    local list_entry = proc.read_int64(entity_list + 0x8 * ((post_processing_handle & 0x7FFF) >> 9) + 0x10)
+    if not list_entry or list_entry == 0 then return end
+    local post_processing_entity = proc.read_int64(list_entry + 0x78 * (post_processing_handle & 0x1FF))
+    if not post_processing_entity or post_processing_entity == 0 then return end
+
+    local min_exposure_addr = post_processing_entity + offsets.m_flMinExposure
+    local max_exposure_addr = post_processing_entity + offsets.m_flMaxExposure
+
+
+    if is_enabled then
+        if not nightmode_state.has_saved_original_values then
+            nightmode_state.original_min_exposure = proc.read_float(min_exposure_addr)
+            nightmode_state.original_max_exposure = proc.read_float(max_exposure_addr)
+            nightmode_state.has_saved_original_values = true
+        end
+        
+        local slider_val = ui_state.intensity_slider:get()
+        local new_exposure_value = 0.1 - ((slider_val - 1.0) * 0.0010)
+        
+        if proc.read_float(min_exposure_addr) ~= new_exposure_value then
+            proc.write_float(min_exposure_addr, new_exposure_value)
+            proc.write_float(max_exposure_addr, new_exposure_value)
+        end
+    
+    else
+        if nightmode_state.has_saved_original_values then
+            proc.write_float(min_exposure_addr, nightmode_state.original_min_exposure)
+            proc.write_float(max_exposure_addr, nightmode_state.original_max_exposure)
+            
+            nightmode_state.has_saved_original_values = false
+        end
     end
 end
 
@@ -1480,6 +1601,8 @@ engine.register_on_engine_tick(function()
     update_bomb_panel()
     draw_bomb_panel()
     handle_anti_flash() 
+    handle_c4_esp()
+    handle_nightmode()
 
     config.espEnabled = ui_state.esp_checkbox and ui_state.esp_checkbox:get() or false
     config.skeletonRendering = ui_state.skeleton_checkbox and ui_state.skeleton_checkbox:get() or false
