@@ -1,17 +1,20 @@
 proc.attach_by_name("cs2.exe")
 local ui_state = {}
-local tab = gui.get_tab("lua")
-local visuals = gui.get_tab("visuals")
-local config = gui.get_tab("settings")
-local legitbot = gui.get_tab("aimbot")
-ui_state.legitbot = legitbot:create_panel("SaikaidoSense Legitbot", true)
-ui_state.legitbot:add_text("-----Under Construction------")
-ui_state.panel = tab:create_panel("SaikaidoSense", true)
-
+local tab = gui.get_tab("visuals")
+ui_state.panel = tab:create_panel("SaikaidoSense Legitbot", true)
+ui_state.panel:add_text("Aimbot - under construction")
+ui_state.panel:add_text("---Triggerbot---")
+ui_state.trigger_bot_enable = ui_state.panel:add_checkbox("Enable Triggerbot", true)
+ui_state.panel:add_text("TriggerBot Key")
+ui_state.trigger_bot_key = ui_state.panel:add_keybind("Trigger Hotkey", 0x05, key_mode.onhotkey)
+ui_state.trigger_bot_delay = ui_state.panel:add_slider_int("Trigger Delay (ms)", 0, 250, 25)
+ui_state.trigger_hitchance = ui_state.panel:add_slider_int("Min Hitchance (%)", 0, 100, 70)
+ui_state.trigger_ignore_team = ui_state.panel:add_checkbox("Team Check", true)
+ui_state.panel:add_text("-------------")
+ui_state.draw_fov_circle_checkbox = ui_state.panel:add_checkbox("Draw FOV Circle")
 ui_state.watermark_checkbox = ui_state.panel:add_checkbox("Enable Watermark")
 ui_state.crs_checkbox = ui_state.panel:add_checkbox("Enable Crosshair")
 ui_state.utft_checkbox = ui_state.panel:add_checkbox("MISC")
-
 ui_state.panel:add_text("-----Watermark Settings")
 ui_state.panel:add_text("Background Color")
 ui_state.color_picker = ui_state.panel:add_color_picker("Background Color Picker", 255, 0, 0, 255)
@@ -63,48 +66,52 @@ ui_state.panel:add_text("Header background Color")
 ui_state.speclistheadercolor_picker = ui_state.panel:add_color_picker("Spectator List Header Color Picker", 255, 255, 255, 255)
 ui_state.speclistheadercolor_picker:set(200, 200, 200, 255)
 
-ui_state.visuals = visuals:create_panel("SaikaidoSense Visuals", true)
-ui_state.visuals:add_text("-----ESP Settings")
-ui_state.esp_checkbox = ui_state.visuals:add_checkbox("Enable ESP")
-ui_state.skeleton_checkbox = ui_state.visuals:add_checkbox("Skeleton")
-ui_state.espbox_checkbox = ui_state.visuals:add_checkbox("ESP Box")
-ui_state.espname_checkbox = ui_state.visuals:add_checkbox("ESP Name")
-ui_state.enable_weapon_esp = ui_state.visuals:add_checkbox("Show Dropped Weapons")
-ui_state.enable_projectile_esp = ui_state.visuals:add_checkbox("Show Grenades")
-ui_state.enable_chicken_esp = ui_state.visuals:add_checkbox("Show Chickens")
-ui_state.enable_bomb_esp = ui_state.visuals:add_checkbox("Enable Bomb ESP")
-ui_state.glow_checkbox = ui_state.visuals:add_checkbox("Glow{MISC Should be enabled}")
-ui_state.visuals:add_text("Box Color Picker")
-ui_state.boxcolor_picker = ui_state.visuals:add_color_picker("Box Color Picker", 255, 0, 0, 255)
+
+ui_state.panel:add_text("-----ESP Settings")
+ui_state.esp_checkbox = ui_state.panel:add_checkbox("Enable ESP")
+ui_state.skeleton_checkbox = ui_state.panel:add_checkbox("Skeleton")
+ui_state.espbox_checkbox = ui_state.panel:add_checkbox("ESP Box")
+ui_state.espname_checkbox = ui_state.panel:add_checkbox("ESP Name")
+ui_state.moneyesp_checkbox = ui_state.panel:add_checkbox("Money ESP") 
+ui_state.enable_weapon_esp = ui_state.panel:add_checkbox("Show Dropped Weapons")
+ui_state.enable_projectile_esp = ui_state.panel:add_checkbox("Show Grenades")
+ui_state.enable_chicken_esp = ui_state.panel:add_checkbox("Show Chickens")
+ui_state.enable_bomb_esp = ui_state.panel:add_checkbox("Enable Bomb ESP")
+ui_state.glow_checkbox = ui_state.panel:add_checkbox("Glow{MISC Should be enabled}")
+ui_state.panel:add_text("Box Color Picker")
+ui_state.boxcolor_picker = ui_state.panel:add_color_picker("Box Color Picker", 255, 0, 0, 255)
 ui_state.boxcolor_picker:set(18, 18, 18, 255)
-ui_state.visuals:add_text("Skeleton Color Picker")
-ui_state.skeletoncolor_picker = ui_state.visuals:add_color_picker("Skeleton Color Picker", 255, 0, 0, 255)
+ui_state.panel:add_text("Skeleton Color Picker")
+ui_state.skeletoncolor_picker = ui_state.panel:add_color_picker("Skeleton Color Picker", 255, 0, 0, 255)
 ui_state.skeletoncolor_picker:set(18, 18, 18, 255)
-ui_state.visuals:add_text("Name Color Picker")
-ui_state.espnamecolor_picker = ui_state.visuals:add_color_picker("ESP Name Color Picker", 255, 0, 0, 255)
+ui_state.panel:add_text("Name Color Picker")
+ui_state.espnamecolor_picker = ui_state.panel:add_color_picker("ESP Name Color Picker", 255, 0, 0, 255)
 ui_state.espnamecolor_picker:set(18, 18, 18, 255)
-ui_state.visuals:add_text("CT GLOW")
-ui_state.ctglowcolor_picker = ui_state.visuals:add_color_picker("CT GLOW", 0, 0, 255, 255)
+ui_state.panel:add_text("Money ESP Color Picker")
+ui_state.moneycolor_picker = ui_state.panel:add_color_picker("Money Color Picker", 50, 200, 50, 255)
+ui_state.panel:add_text("CT GLOW")
+ui_state.ctglowcolor_picker = ui_state.panel:add_color_picker("CT GLOW", 0, 0, 255, 255)
 ui_state.ctglowcolor_picker:set(0, 0, 255, 255)
-ui_state.visuals:add_text("T GLOW")
-ui_state.tglowcolor_picker = ui_state.visuals:add_color_picker("T GLOW", 255, 0, 0, 255)
+ui_state.panel:add_text("T GLOW")
+ui_state.tglowcolor_picker = ui_state.panel:add_color_picker("T GLOW", 255, 0, 0, 255)
 ui_state.tglowcolor_picker:set(255, 0, 0, 255)
-ui_state.visuals:add_text("BOMB ESP")
-ui_state.c4_box_color = ui_state.visuals:add_color_picker("Bomb", 255, 50, 50, 255)
+ui_state.panel:add_text("BOMB ESP")
+ui_state.c4_box_color = ui_state.panel:add_color_picker("Bomb", 255, 50, 50, 255)
 
-ui_state.nightmode_state = visuals:create_panel("SaikaidoSense Nightmode", true)
+ui_state.enabled_checkbox = ui_state.panel:add_checkbox("Enable Nightmode")
+ui_state.intensity_slider = ui_state.panel:add_slider_float("Nightmode Intensity", 1.0, 100.0, 50.0)
 
-ui_state.enabled_checkbox = ui_state.nightmode_state:add_checkbox("Enable Nightmode")
-ui_state.intensity_slider = ui_state.nightmode_state:add_slider_float("Nightmode Intensity", 1.0, 100.0, 50.0)
 
-ui_state.visuals:add_text("-----Design Mode")
-ui_state.des_checkbox = ui_state.visuals:add_checkbox("Design Mode")
-ui_state.desmodedim_slider_int = ui_state.visuals:add_slider_int("DIM Slider", 0, 10, 3)
+ui_state.enable_smoke_mod = ui_state.panel:add_checkbox("Enable Smoke Color", true)
+ui_state.smoke_color_picker = ui_state.panel:add_color_picker("Smoke Color", 170, 0, 255, 255)
 
-ui_state.confpanel = config:create_panel("SaikaidoSense Config", true)
-ui_state.wtpos = ui_state.confpanel:add_input_text("Input Field", "default")
-ui_state.specpos = ui_state.confpanel:add_input_text("DEBUG SHIT DONT TOUCH", "default")
-ui_state.bombpanelpos = ui_state.confpanel:add_input_text("Bomb Timer Position", "25,200")
+ui_state.des_checkbox = ui_state.panel:add_checkbox("Design Mode")
+ui_state.desmodedim_slider_int = ui_state.panel:add_slider_int("DIM Slider", 0, 10, 3)
+
+
+ui_state.wtpos = ui_state.panel:add_input_text("Input Field", "default")
+ui_state.specpos = ui_state.panel:add_input_text("DEBUG SHIT DONT TOUCH", "default")
+ui_state.bombpanelpos = ui_state.panel:add_input_text("Bomb Timer Position", "25,200")
 
 local config_logs = {}
 local function LogSuccess(msg)
@@ -121,7 +128,7 @@ local function LogError(msg)
         color = {255, 0, 0, 255},
     })
 end
-ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
+ui_state.save_config = ui_state.panel:add_button("Save Config", function()
     local config = {
         watermark = {
             enabled = ui_state.watermark_checkbox:get(),
@@ -144,6 +151,14 @@ ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
             radar_checkbox = ui_state.radar_checkbox:get(),
             anti_flash_checkbox = ui_state.anti_flash_checkbox:get(),
         },
+        triggerbot = {
+            enabled = ui_state.trigger_bot_enable:get(),
+            key = ui_state.trigger_bot_key:get_key(),
+            mode = ui_state.trigger_bot_key:get_mode(),
+            delay = ui_state.trigger_bot_delay:get(),
+            hitchance = ui_state.trigger_hitchance:get(),
+            team_check = ui_state.trigger_ignore_team:get(),
+        },
         hitlog = {
             bg_color = {ui_state.htcolor_picker:get()},
             outline_color = {ui_state.htotcolor_picker:get()},
@@ -165,9 +180,19 @@ ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
             skeleton_checkbox = ui_state.skeleton_checkbox:get(),
             espbox_checkbox = ui_state.espbox_checkbox:get(),
             espname_checkbox = ui_state.espname_checkbox:get(),
+            money_esp_enabled = ui_state.moneyesp_checkbox:get(), 
+            dropped_weapons = ui_state.enable_weapon_esp:get(),
+            chicken_esp = ui_state.enable_chicken_esp:get(),
+            granade_esp = ui_state.enable_projectile_esp:get(),
+            bomb_esp = ui_state.enable_bomb_esp:get(),
+            glow = ui_state.glow_checkbox:get(),
+            nightmode_state = ui_state.enabled_checkbox:get(),
+            enable_smoke_mod =ui_state.enable_smoke_mod:get(),
+            smoke_color_picker = {ui_state.smoke_color_picker:get()},
             boxcolor = {ui_state.boxcolor_picker:get()},
             skeletoncolor = {ui_state.skeletoncolor_picker:get()},
-            espnamecolor = {ui_state.espnamecolor_picker:get()},            
+            espnamecolor = {ui_state.espnamecolor_picker:get()},
+            money_esp_color = {ui_state.moneycolor_picker:get()},         
             ctglow = {ui_state.ctglowcolor_picker:get()},
             tglow = {ui_state.tglowcolor_picker:get()},
             bomb_esp_color = {ui_state.c4_box_color:get()},
@@ -182,7 +207,7 @@ ui_state.save_config = ui_state.confpanel:add_button("Save Config", function()
     end
 end)
 
-ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
+ui_state.load_config = ui_state.panel:add_button("Load Config", function()
     if not fs.does_file_exist("saikaidosense_conf.txt") then
         LogError("No configuration file found!")
         return
@@ -263,12 +288,28 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
     end
 
 
+    if config.triggerbot then
+        if config.triggerbot.enabled ~= nil then ui_state.trigger_bot_enable:set(config.triggerbot.enabled) end
+        if config.triggerbot.key then ui_state.trigger_bot_key:set_key(config.triggerbot.key) end
+        if config.triggerbot.mode then ui_state.trigger_bot_key:set_mode(config.triggerbot.mode) end
+        if config.triggerbot.delay then ui_state.trigger_bot_delay:set(config.triggerbot.delay) end
+        if config.triggerbot.hitchance then ui_state.trigger_hitchance:set(config.triggerbot.hitchance) end
+        if config.triggerbot.team_check ~= nil then ui_state.trigger_ignore_team:set(config.triggerbot.team_check) end
+    end
 
     if config.esp then
         ui_state.esp_checkbox:set(config.esp.espEnabled)
         ui_state.skeleton_checkbox:set(config.esp.skeleton_checkbox)
         ui_state.espbox_checkbox:set(config.esp.espbox_checkbox)
         ui_state.espname_checkbox:set(config.esp.espname_checkbox)
+        ui_state.enable_weapon_esp:set(config.esp.dropped_weapons)
+        ui_state.enable_projectile_esp:set(config.esp.granade_esp)
+        ui_state.enable_chicken_esp:set(config.esp.chicken_esp)
+        ui_state.enable_bomb_esp:set(config.esp.bomb_esp)
+        ui_state.glow_checkbox:set(config.esp.glow)
+        ui_state.enabled_checkbox:set(config.esp.nightmode_state)
+        ui_state.enable_smoke_mod:set(config.esp.enable_smoke_mod)
+        if config.esp.money_esp_enabled ~= nil then ui_state.moneyesp_checkbox:set(config.esp.money_esp_enabled) end 
         if config.esp.boxcolor then
             ui_state.boxcolor_picker:set(table.unpack(config.esp.boxcolor))
         end
@@ -278,6 +319,7 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
         if config.esp.espnamecolor then
             ui_state.espnamecolor_picker:set(table.unpack(config.esp.espnamecolor))
         end
+        if config.esp.money_esp_color then ui_state.moneycolor_picker:set(table.unpack(config.esp.money_esp_color)) end 
         if config.ctglow then
             ui_state.ctglowcolor_picker:set(table.unpack(config.esp.ctglow))
         end
@@ -287,6 +329,9 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
         if config.bomb_esp_color then
             ui_state.c4_box_color:set(table.unpack(config.bomb_esp_color))
         end
+        if config.esp.smoke_color_picker then
+            ui_state.smoke_color_picker:set(table.unpack(config.esp.smoke_color_picker))
+    end
     end
 
     if config.DEBUG then
@@ -303,13 +348,13 @@ ui_state.load_config = ui_state.confpanel:add_button("Load Config", function()
             end
         end
         if config.DEBUG.speclist_position then
-        local pos_str = tostring(config.speclist and config.speclist.position or config.DEBUG.speclist_position or "")
-    ui_state.specpos:set(pos_str)
-    local x, y = string.match(pos_str, "^(%-?%d+),(%-?%d+)$")
-    if x and y then
-        speclist_drag_x = tonumber(x)
-        speclist_drag_y = tonumber(y)
-    end
+            local pos_str = tostring(config.speclist and config.speclist.position or config.DEBUG.speclist_position or "")
+            ui_state.specpos:set(pos_str)
+            local x, y = string.match(pos_str, "^(%-?%d+),(%-?%d+)$")
+            if x and y then
+                speclist_drag_x = tonumber(x)
+                speclist_drag_y = tonumber(y)
+            end
         end
     end
 
@@ -327,8 +372,8 @@ local OFFSETS = {
     OBSERVER_SERVICES = 0x11C0,
     OBSERVER_TARGET = 0x44,
     SANITIZED_NAME = 0x778,
-    dwPlantedC4 = 0x1A71C40,
-    dwGlobalVars = 0x184BEB0,
+    dwPlantedC4 = 0x1A72ED0,
+    dwGlobalVars = 0x184CEB0,
     m_flC4Blow = 0xFC0,
     m_flCurrentTime = 0x5C0,
 }
@@ -394,6 +439,7 @@ local config = {
     skeletonRendering = ui_state.skeleton_checkbox and ui_state.skeleton_checkbox:get() or true,
     boxRendering = ui_state.espbox_checkbox and ui_state.espbox_checkbox:get() or true,
     nameRendering = ui_state.espname_checkbox and ui_state.espname_checkbox:get() or true,
+    moneyRendering = ui_state.moneyesp_checkbox and ui_state.moneyesp_checkbox:get() or true, 
     healthBarRendering = true,
     healthTextRendering = true,
     debug_logging = true
@@ -417,12 +463,17 @@ local nightmode_state = {
     original_max_exposure = 1.0,
 }
 
+
+local trigger_last_shot_time = 0
+local trigger_pending_actions = {}
+
+
 local offsets = {
-    dwViewMatrix = 0x1A6D280,
-    dwLocalPlayerPawn = 0x18580D0,
-    dwLocalPlayerController = 0x1A52D20,
-    dwEntityList = 0x1A044E0,
-    dwViewAngles = 0x1A774E0,
+    dwViewMatrix = 0x1A6E3F0,
+    dwLocalPlayerPawn = 0x18590D0,
+    dwLocalPlayerController = 0x1A53C38,
+    dwEntityList = 0x1A05670,
+    dwViewAngles = 0x1A78650,
     m_hPlayerPawn = 0x824,
     m_bDormant = 0xEF,
     m_angEyeAngles = 0x1438,
@@ -439,7 +490,7 @@ local offsets = {
     m_boneArray = 0x80,
     m_nodeToWorld = 0x10,
     m_sSanitizedPlayerName = 0x778,
-    dwPlantedC4 = 0x1A71C40,
+    dwPlantedC4 = 0x1A72ED0,
     m_nBombSite = 0xF94,
     m_bBeingDefused = 0xFCC,
     m_bBombDefused = 0xFE4,
@@ -449,11 +500,20 @@ local offsets = {
     m_pCameraServices = 0x11E0,  
     m_hPostProcessing = 0x1F4,     
     m_flMinExposure = 0xD54,        
-    m_flMaxExposure = 0xD58     
+    m_flMaxExposure = 0xD58,
+    m_pInGameMoneyServices = 0x720,
+    m_iAccount = 0x40,
+    m_pEntity = 0x10,
+    m_designerName = 0x20,
+    -- C_SmokeGrenadeProjectile offset
+    vSmokeColor = 0x121C,
+    m_iIDEntIndex = 0x1458,
+    m_vecVelocity = 0x400
 }
 
 local g = {
-    font = render.create_font("Verdana", 12, 700)
+    font = render.create_font("Verdana", 12, 700),
+    small_font = render.create_font("Verdana", 11, 400)
 }
 
 local BONE_MAP = {
@@ -470,6 +530,10 @@ local process = {
     is_open = false,
     client_dll = 0,
 }
+
+
+local TARGET_DESIGNER_NAME = "smokegrenade_projectile"
+
 local hitlog_messages = {}
 local function add_hitlog_message(msg)
     table.insert(hitlog_messages, {
@@ -1519,6 +1583,44 @@ function handle_anti_flash()
 end
 
 
+local function handle_smoke_modulator()
+    if not ui_state.enable_smoke_mod:get() then return end
+    
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
+    
+    local r, g, b, _ = ui_state.smoke_color_picker:get()
+    local color_vec = vec3(r / 255.0, g / 255.0, b / 255.0)
+
+    for i = 64, 2048 do
+        local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+        if entity_list == 0 then return end
+
+        local list_entry = proc.read_int64(entity_list + 0x8 * ((i >> 9) & 0x7F) + 0x10)
+        if not list_entry or list_entry == 0 then goto continue_smoke_loop end
+        
+        local entity = proc.read_int64(list_entry + 120 * (i & 0x1FF))
+        if not entity or entity == 0 then goto continue_smoke_loop end
+        
+        local item_info_ptr = proc.read_int64(entity + 0x10)
+        if not item_info_ptr or item_info_ptr == 0 then goto continue_smoke_loop end
+
+        local item_type_ptr = proc.read_int64(item_info_ptr + 0x20)
+        if not item_type_ptr or item_type_ptr == 0 then goto continue_smoke_loop end
+        
+        local designer_name = proc.read_string(item_type_ptr, 128)
+
+        if designer_name and designer_name == "smokegrenade_projectile" then
+            local color_addr = entity + offsets.vSmokeColor
+            vec3.write_float(color_addr, color_vec)
+        end
+        
+        ::continue_smoke_loop::
+    end
+end
+
+
+
 function handle_nightmode()
     local is_enabled = ui_state.enabled_checkbox:get()
 
@@ -1576,6 +1678,103 @@ function handle_nightmode()
     end
 end
 
+
+function trigger_schedule_action(ms, callback)
+    table.insert(trigger_pending_actions, {
+        execute_at = winapi.get_tickcount64() + ms,
+        callback = callback
+    })
+end
+
+function trigger_process_pending_actions()
+    if #trigger_pending_actions == 0 then return end
+    
+    local current_time_ms = winapi.get_tickcount64()
+    
+    for i = #trigger_pending_actions, 1, -1 do
+        local action = trigger_pending_actions[i]
+        if current_time_ms >= action.execute_at then
+            action.callback()
+            table.remove(trigger_pending_actions, i)
+        end
+    end
+end
+
+function trigger_click_mouse()
+    local shot_delay = ui_state.trigger_bot_delay:get()
+    
+    trigger_schedule_action(shot_delay, function()
+        input.simulate_mouse(0, 0, 2) 
+        trigger_schedule_action(50, function()
+             input.simulate_mouse(0, 0, 4)
+        end)
+    end)
+end
+
+function trigger_get_current_hitchance()
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll then return 0 end
+    
+    local local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if local_pawn == 0 then return 0 end
+    
+    local velocity_vec = vec3.read_float(local_pawn + offsets.m_vecVelocity)
+    local current_speed = velocity_vec:length_2d()
+
+    local hitchance = math.map(current_speed, 0, 250.0, 100, 0)
+    
+    return math.clamp(hitchance, 0, 100)
+end
+
+
+
+function handle_triggerbot()
+
+    if not ui_state.trigger_bot_enable:get() then
+        return
+    end
+
+    trigger_process_pending_actions()
+
+
+    if not ui_state.trigger_bot_key:is_active() or input.is_menu_open() then return end
+    if (winapi.get_tickcount64() - trigger_last_shot_time) < 100 then return end -- 100ms base cooldown
+
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll then return end
+
+    local localPlayer = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if localPlayer == 0 then return end
+    
+    local entityId = proc.read_int32(localPlayer + offsets.m_iIDEntIndex)
+    if entityId <= 0 then return end
+
+    local entList = proc.read_int64(client_dll + offsets.dwEntityList)
+    if entList == 0 then return end
+    
+    local entListEntry = proc.read_int64(entList + 0x8 * (math.floor(entityId / 512)) + 0x10)
+    if entListEntry == 0 then return end
+    
+    local entity = proc.read_int64(entListEntry + 120 * (entityId % 512))
+    if entity == 0 then return end
+
+    local playerTeam = proc.read_int32(localPlayer + offsets.m_iTeamNum)
+    local entityTeam = proc.read_int32(entity + offsets.m_iTeamNum)
+    local entityHp = proc.read_int32(entity + offsets.m_iHealth)
+    
+    local ignore_teammates = ui_state.trigger_ignore_team:get()
+
+    if entityHp > 0 and (not ignore_teammates or entityTeam ~= playerTeam) and entityTeam ~= 0 then
+        local current_hitchance = trigger_get_current_hitchance()
+        local required_hitchance = ui_state.trigger_hitchance:get()
+        
+        if current_hitchance >= required_hitchance then
+            trigger_click_mouse()
+            trigger_last_shot_time = winapi.get_tickcount64()
+        end
+    end
+end
+
 engine.register_on_engine_tick(function()
     if ui_state and ui_state.specpos and not speclist_dragging then
         local val = ui_state.specpos:get()
@@ -1603,11 +1802,14 @@ engine.register_on_engine_tick(function()
     handle_anti_flash() 
     handle_c4_esp()
     handle_nightmode()
+    handle_smoke_modulator()
+    handle_triggerbot()
 
     config.espEnabled = ui_state.esp_checkbox and ui_state.esp_checkbox:get() or false
     config.skeletonRendering = ui_state.skeleton_checkbox and ui_state.skeleton_checkbox:get() or false
     config.boxRendering = ui_state.espbox_checkbox and ui_state.espbox_checkbox:get() or false
     config.nameRendering = ui_state.espname_checkbox and ui_state.espname_checkbox:get() or false
+    config.moneyRendering = ui_state.moneyesp_checkbox and ui_state.moneyesp_checkbox:get() or false 
 
     if not config.espEnabled then return end
 
@@ -1662,6 +1864,15 @@ engine.register_on_engine_tick(function()
 
         local team = proc.read_int32(entity_pawn + offsets.m_iTeamNum)
         if config.teamCheck and team == local_team then goto continue end
+        
+ 
+        local money = -1 
+        if config.moneyRendering then
+            local money_services = proc.read_int64(entity_controller + offsets.m_pInGameMoneyServices)
+            if money_services ~= 0 then
+                money = proc.read_int32(money_services + offsets.m_iAccount)
+            end
+        end
 
         local game_scene_node = proc.read_int64(entity_pawn + offsets.m_pGameSceneNode)
         if game_scene_node == 0 then goto continue end
@@ -1690,6 +1901,7 @@ engine.register_on_engine_tick(function()
 
         local entity_to_render = {
             health = health, team = team, distance = local_origin:distance(origin_3d),
+            money = money, 
             rect = {
                 top = bones_2d.head.y, bottom = screen_pos_feet.y,
                 left = bones_2d.head.x - (box_width / 2), right = bones_2d.head.x + (box_width / 2)
@@ -1784,6 +1996,14 @@ function render_entity_info(entity)
         local text_x = (rect.left + rect.right) / 2 - (#entity.name * 3.5)
         local text_y = rect.top - 14
         render.draw_text(g.font, entity.name, text_x, text_y, name_r, name_g, name_b, name_a, 1, outline_r, outline_g, outline_b, outline_a)
+    end
+
+   if config.moneyRendering and entity.money and entity.money > -1 then
+        local money_r, money_g, money_b, money_a = ui_state.moneycolor_picker:get()
+        local money_text = "$" .. tostring(entity.money)
+        local text_x = rect.right + 4 
+        local text_y = rect.top 
+        render.draw_text(g.small_font, money_text, text_x, text_y, money_r, money_g, money_b, money_a, 1, outline_r, outline_g, outline_b, outline_a)
     end
 
     if config.healthTextRendering and not config.healthBarRendering then
@@ -1963,7 +2183,7 @@ local function to_argb(r, g, b, a)
 end
 
 local function update_glow()
-    if not (ui_state.esp_checkbox:get() and ui_state.glow_checkbox:get() and ui_state.utft_checkbox:get()) then
+    if not (ui_state.esp_checkbox:get() and ui_state.glow_checkbox:get()) then
         return
     end
     
