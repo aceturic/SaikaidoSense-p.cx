@@ -1,8 +1,37 @@
 proc.attach_by_name("cs2.exe")
+
 local ui_state = {}
 local tab = gui.get_tab("visuals")
 ui_state.panel = tab:create_panel("SaikaidoSense Legitbot", true)
-ui_state.panel:add_text("Aimbot - under construction")
+
+ui_state.panel:add_text("----- Ragebot -----")
+ui_state.rage_enabled = ui_state.panel:add_checkbox("Enable Rage Aimbot")
+ui_state.aim_key = ui_state.panel:add_keybind("Rage Key", 0x06, key_mode.onhotkey)
+ui_state.show_fov = ui_state.panel:add_checkbox("Show FOV (Targeting Radius)", true)
+ui_state.fov_slider = ui_state.panel:add_slider_float("FOV", 1.0, 500.0, 150.0)
+ui_state.panel:add_text("Anti-Aim Control")
+ui_state.aa_enabled = ui_state.panel:add_checkbox("Enable Anti-Aim", false)
+ui_state.disable_key = ui_state.panel:add_keybind("Disable on Key", 0x05, key_mode.onhotkey)
+ui_state.panel:add_text("Pitch")
+ui_state.pitch_mode = ui_state.panel:add_single_select("Pitch Angle", { "None", "Down", "Up", "Jitter" }, 1)
+ui_state.panel:add_text("Yaw")
+ui_state.yaw_mode = ui_state.panel:add_single_select("Yaw Mode", { "None", "Backward", "Spin" }, 1)
+ui_state.yaw_additive = ui_state.panel:add_slider_float("Yaw Additive Offset", -180.0, 180.0, 0.0)
+ui_state.spin_speed = ui_state.panel:add_slider_float("Spin Speed", 1.0, 100.0, 15.0)
+ui_state.panel:add_text("Jitter")
+ui_state.jitter_enabled = ui_state.panel:add_checkbox("Add Random Jitter")
+ui_state.jitter_range = ui_state.panel:add_slider_float("Jitter Range (+/-)", 0.0, 90.0, 20.0)
+ui_state.panel:add_text("----- Aimbot -----")
+ui_state.aim_enabled_checkbox = ui_state.panel:add_checkbox("Enable Aimbot")
+ui_state.aim_vis_check_checkbox = ui_state.panel:add_checkbox("Visibility Check")
+ui_state.aim_keybind = ui_state.panel:add_keybind("Legit Aimbot Key", 90, key_mode.onhotkey)
+ui_state.aim_fov_slider = ui_state.panel:add_slider_int("Aim FOV", 0, 100, 50)
+ui_state.aim_smoothing_slider = ui_state.panel:add_slider_int("Aim Smoothing", 5, 100, 8)
+ui_state.aim_switch_delay_slider = ui_state.panel:add_slider_float("Target Switch Delay", 0.0, 1.0, 0.3)
+ui_state.aim_hitbox_combo = ui_state.panel:add_single_select("Aim Hitbox", { "Head", "Neck", "Body", "Pelvis" })
+ui_state.aim_human_factor_slider = ui_state.panel:add_slider_int("Hum Factor", 5, 100, 8)
+ui_state.aim_target_mode_combo = ui_state.panel:add_single_select("Aim Priority", { "Closest to Crosshair" }) 
+ui_state.draw_fov_circle_checkbox = ui_state.panel:add_checkbox("Draw FOV Circle")
 ui_state.panel:add_text("---Triggerbot---")
 ui_state.trigger_bot_enable = ui_state.panel:add_checkbox("Enable Triggerbot", true)
 ui_state.panel:add_text("TriggerBot Key")
@@ -11,7 +40,6 @@ ui_state.trigger_bot_delay = ui_state.panel:add_slider_int("Trigger Delay (ms)",
 ui_state.trigger_hitchance = ui_state.panel:add_slider_int("Min Hitchance (%)", 0, 100, 70)
 ui_state.trigger_ignore_team = ui_state.panel:add_checkbox("Team Check", true)
 ui_state.panel:add_text("-------------")
-ui_state.draw_fov_circle_checkbox = ui_state.panel:add_checkbox("Draw FOV Circle")
 ui_state.watermark_checkbox = ui_state.panel:add_checkbox("Enable Watermark")
 ui_state.crs_checkbox = ui_state.panel:add_checkbox("Enable Crosshair")
 ui_state.utft_checkbox = ui_state.panel:add_checkbox("MISC")
@@ -40,6 +68,8 @@ ui_state.speclist_checkbox = ui_state.panel:add_checkbox("Spectator List")
 ui_state.c4timer_checkbox = ui_state.panel:add_checkbox("C4")
 ui_state.radar_checkbox = ui_state.panel:add_checkbox("Radar")
 ui_state.anti_flash_checkbox = ui_state.panel:add_checkbox("Enable Anti-Flash")
+ui_state.thirdperson_enabled = ui_state.panel:add_checkbox("Enable Thirdperson") 
+ui_state.thirdperson_key = ui_state.panel:add_keybind("Thirdperson Key", 86, key_mode.toggle) 
 
 ui_state.panel:add_text("-----Hitlog Settings")
 ui_state.panel:add_text("Background Color")
@@ -71,8 +101,14 @@ ui_state.panel:add_text("-----ESP Settings")
 ui_state.esp_checkbox = ui_state.panel:add_checkbox("Enable ESP")
 ui_state.skeleton_checkbox = ui_state.panel:add_checkbox("Skeleton")
 ui_state.espbox_checkbox = ui_state.panel:add_checkbox("ESP Box")
+ui_state.esp_box_type = ui_state.panel:add_single_select("Box Type", { "Normal", "Corner" }, 1)
 ui_state.espname_checkbox = ui_state.panel:add_checkbox("ESP Name")
 ui_state.moneyesp_checkbox = ui_state.panel:add_checkbox("Money ESP") 
+ui_state.scoped_flag_checkbox = ui_state.panel:add_checkbox("Scoped Flag")
+ui_state.flashed_flag_checkbox = ui_state.panel:add_checkbox("Flashed Flag")
+ui_state.distance_esp_checkbox = ui_state.panel:add_checkbox("Show Distance")
+ui_state.distance_color_picker = ui_state.panel:add_color_picker("Distance Color Picker", 220, 220, 220, 255)
+ui_state.enable_pweapon_esp = ui_state.panel:add_checkbox("Player Wepon")
 ui_state.enable_weapon_esp = ui_state.panel:add_checkbox("Show Dropped Weapons")
 ui_state.enable_projectile_esp = ui_state.panel:add_checkbox("Show Grenades")
 ui_state.enable_chicken_esp = ui_state.panel:add_checkbox("Show Chickens")
@@ -366,16 +402,16 @@ local bombpanel_dragging = false
 local bombpanel_drag_offset_x, bombpanel_drag_offset_y = 0, 0
 
 local OFFSETS = {
-    ENTITY_LIST = 0x1A044E0,
-    LOCAL_PLAYER_PAWN = 0x18580D0,
-    M_HPAWN = 0x62C,
-    OBSERVER_SERVICES = 0x11C0,
+    ENTITY_LIST = 0x1CBE6A0,
+    LOCAL_PLAYER_PAWN = 0x1AF4B80,
+    M_HPAWN = 0x6B4,
+    OBSERVER_SERVICES = 0x1418,
     OBSERVER_TARGET = 0x44,
-    SANITIZED_NAME = 0x778,
-    dwPlantedC4 = 0x1A72ED0,
-    dwGlobalVars = 0x184CEB0,
-    m_flC4Blow = 0xFC0,
-    m_flCurrentTime = 0x5C0,
+    SANITIZED_NAME = 0x850,
+    dwPlantedC4 = 0x1D27200,
+    dwGlobalVars = 0x1AE9458,
+    m_flC4Blow = 0x11A0,
+    m_flCurrentTime = 0x650,
 }
 
 local DESIGN_MODE_APPEAR_TIME = 0.18
@@ -469,46 +505,61 @@ local trigger_pending_actions = {}
 
 
 local offsets = {
-    dwViewMatrix = 0x1A6E3F0,
-    dwLocalPlayerPawn = 0x18590D0,
-    dwLocalPlayerController = 0x1A53C38,
-    dwEntityList = 0x1A05670,
-    dwViewAngles = 0x1A78650,
-    m_hPlayerPawn = 0x824,
-    m_bDormant = 0xEF,
-    m_angEyeAngles = 0x1438,
-    m_iHealth = 0x344,
-    m_lifeState = 0x348,
-    m_Glow = 0xC00,
+    dwViewMatrix = 0x1E328A0,
+    dwLocalPlayerPawn = 0x1BF14A0,
+    dwLocalPlayerController = 0x1E1E850,
+    dwEntityList = 0x1D15578,
+    dwViewAngles = 0x1E3D780,
+    m_hPlayerPawn = 0x8FC,
+    m_bDormant = 0x10B,
+    m_angEyeAngles = 0x1668,
+    m_iHealth = 0x34C,
+    m_lifeState = 0x350,
+    m_Glow = 0xCC0,
     m_glowColorOverride = 0x40,
     m_bGlowing = 0x51,
     m_iGlowType = 0x30,
-    m_iTeamNum = 0x3E3,
-    m_vOldOrigin = 0x1324,
-    m_pGameSceneNode = 0x328,
-    m_modelState = 0x170,
+    m_iTeamNum = 0x3EB,
+    m_ArmorValue = 0x2884,
+    m_vOldOrigin = 0x15B0,
+    m_pGameSceneNode = 0x330,
+    m_modelState = 0x190,
     m_boneArray = 0x80,
     m_nodeToWorld = 0x10,
-    m_sSanitizedPlayerName = 0x778,
-    dwPlantedC4 = 0x1A72ED0,
-    m_nBombSite = 0xF94,
-    m_bBeingDefused = 0xFCC,
-    m_bBombDefused = 0xFE4,
-    m_flFlashDuration = 0x140C,
+    m_sSanitizedPlayerName = 0x850,
+    dwPlantedC4 = 0x1E37E10,
+    m_nBombSite = 0x1174,
+    m_bBeingDefused = 0x11AC,
+    m_bBombDefused = 0x11C4,
+    m_flFlashDuration = 0x1658,
     m_vecAbsOrigin = 0xD0,  
-    m_hOwnerEntity = 0x440,      -- C_BaseEntity
-    m_pCameraServices = 0x11E0,  
-    m_hPostProcessing = 0x1F4,     
-    m_flMinExposure = 0xD54,        
-    m_flMaxExposure = 0xD58,
-    m_pInGameMoneyServices = 0x720,
+    m_hOwnerEntity = 0x520,      -- C_BaseEntity
+    m_pCameraServices = 0x1438,  
+    m_hPostProcessing = 0x1F4,   -- NOT UPDATED OFFSET  
+    m_flMinExposure = 0x1024,        
+    m_flMaxExposure = 0x1028,
+    m_pInGameMoneyServices = 0x7F8,
     m_iAccount = 0x40,
     m_pEntity = 0x10,
     m_designerName = 0x20,
     -- C_SmokeGrenadeProjectile offset
-    vSmokeColor = 0x121C,
-    m_iIDEntIndex = 0x1458,
-    m_vecVelocity = 0x400
+    vSmokeColor = 0x1484,
+    m_iIDEntIndex = 0x16FC,
+    m_vecVelocity = 0x430,
+    m_pClippingWeapon = 0x1620,
+    m_bIsScoped = 0x2850,
+     m_iszPlayerName = 0x6E8,
+    m_AttributeManager = 0x13A0,
+    m_Item = 0x50,
+    m_iItemDefinitionIndex = 0x1BA,
+    m_entitySpottedState = 0x2838, 
+    m_bSpotted = 0x8,
+     m_vecViewOffset = 0xD98,
+     m_boneArray_aim = 0x80,
+     m_bSpottedByMask = 0xC,
+     v_angle = 0x14B8,
+    dwCSGOInput = 0x1E3CFD0, 
+    m_bCameraInThirdPerson = 0x251, 
 }
 
 local g = {
@@ -516,12 +567,27 @@ local g = {
     small_font = render.create_font("Verdana", 11, 400)
 }
 
+local esp_fonts = {
+    font = render.create_font("Verdana", 12, 700),
+    small_font = render.create_font("Verdana", 11, 400),
+     name = render.create_font("Verdana", 12, 700),
+    weapon = render.create_font("Verdana", 11, 400)
+}
+
 local BONE_MAP = {
-    head = 6, neck_0 = 5, spine_1 = 4, spine_2 = 2, pelvis = 0,
+    head = 6, neck_0 = 5, neck = 5, spine = 4, spine_1 = 4, spine_2 = 2, pelvis = 0,
     arm_upper_L = 8, arm_lower_L = 9, hand_L = 10,
     arm_upper_R = 13, arm_lower_R = 14, hand_R = 15,
     leg_upper_L = 22, leg_lower_L = 23, ankle_L = 24,
     leg_upper_R = 25, leg_lower_R = 26, ankle_R = 27
+}
+
+local BONE_MAP_aim = {
+    head = 6, neck = 5, spine = 4, pelvis = 0,
+    left_shoulder = 8, left_elbow = 9, left_hand = 10,
+    right_shoulder = 13, right_elbow = 14, right_hand = 15,
+    left_hip = 22, left_knee = 23, left_ankle = 24,
+    right_hip = 25, right_knee = 26, right_ankle = 27
 }
 
 local hitsound_path = "sounds/hitsound.mp3"
@@ -621,6 +687,58 @@ if watermark_dragging then
     watermark_drag_x = mx - watermark_drag_offset_x
     watermark_drag_y = my - watermark_drag_offset_y
     update_watermark_textfields()
+end
+
+
+function draw_esp_placeholder()
+    local vw, vh = render.get_viewport_size()
+
+    local box_height = 280
+    local box_width = box_height / 2.0
+    local box_center_x = vw / 2
+    local box_top_y = vh / 2 - box_height / 2
+    
+    local rect = {
+        top = box_top_y,
+        bottom = box_top_y + box_height,
+        left = box_center_x - (box_width / 2),
+        right = box_center_x + (box_width / 2)
+    }
+
+
+    local placeholder_entity = {
+        health = 85,
+        armor = 75,
+        name = "Placeholder",
+        weapon = "AK47",
+        distance = 13,
+        rect = rect,
+        team = 2 
+    }
+    
+    render_entity_info(placeholder_entity)
+
+    if ui_state.skeleton_checkbox:get() then
+        local bones_2d = {
+            head = vec2(box_center_x, rect.top + (box_height * 0.05)),
+            neck_0 = vec2(box_center_x, rect.top + (box_height * 0.15)),
+            spine_1 = vec2(box_center_x, rect.top + (box_height * 0.30)),
+            pelvis = vec2(box_center_x, rect.top + (box_height * 0.55)),
+            arm_upper_L = vec2(rect.left + (box_width * 0.25), rect.top + (box_height * 0.32)),
+            arm_lower_L = vec2(rect.left + (box_width * 0.15), rect.top + (box_height * 0.50)),
+            hand_L = vec2(rect.left + (box_width * 0.1), rect.top + (box_height * 0.65)),
+            arm_upper_R = vec2(rect.right - (box_width * 0.25), rect.top + (box_height * 0.32)),
+            arm_lower_R = vec2(rect.right - (box_width * 0.15), rect.top + (box_height * 0.50)),
+            hand_R = vec2(rect.right - (box_width * 0.1), rect.top + (box_height * 0.65)),
+            leg_upper_L = vec2(box_center_x - (box_width * 0.15), rect.top + (box_height * 0.75)),
+            leg_lower_L = vec2(box_center_x - (box_width * 0.2), rect.top + (box_height * 0.90)),
+            ankle_L = vec2(box_center_x - (box_width * 0.25), rect.bottom),
+            leg_upper_R = vec2(box_center_x + (box_width * 0.15), rect.top + (box_height * 0.75)),
+            leg_lower_R = vec2(box_center_x + (box_width * 0.2), rect.top + (box_height * 0.90)),
+            ankle_R = vec2(box_center_x + (box_width * 0.25), rect.bottom)
+        }
+        draw_skeleton(bones_2d)
+    end
 end
 
 engine.register_on_engine_tick(function()
@@ -833,6 +951,7 @@ engine.register_on_engine_tick(function()
             alpha_welcome, 2, 0, 0, 0, alpha_welcome*0.5
         )
     end
+
 
     if watermark_visible then
         local anim_progress, alpha
@@ -1113,9 +1232,78 @@ engine.register_on_engine_tick(function()
                     render.draw_text(DisplaySystem.fonts.main, name, x + 16, y + header_height + (i - 1) * entry_height + 4, text_r, text_g, text_b, text_a, 1, 0, 0, 0, 120)
                 end
             end
+            
+            -- do
+            --     local box_height = 280
+            --     local box_width = box_height / 2.0
+            --     local box_center_x = vw / 2
+            --     local box_top_y = vh / 2 - box_height / 2
+            --     local rect = {
+            --         top = box_top_y, bottom = box_top_y + box_height,
+            --         left = box_center_x - (box_width / 2), right = box_center_x + (box_width / 2)
+            --     }
+                
+            --     if ui_state.espbox_checkbox:get() then
+            --         local r, g, b, a = ui_state.boxcolor_picker:get()
+            --         render.draw_rectangle(rect.left, rect.top, box_width, box_height, r, g, b, a, 1, false)
+            --         render.draw_rectangle(rect.left - 1, rect.top - 1, box_width + 2, box_height + 2, 0, 0, 0, a, 1, false)
+            --         render.draw_rectangle(rect.left + 1, rect.top + 1, box_width - 2, box_height - 2, 0, 0, 0, a, 1, false)
+            --     end
+
+            --     if ui_state.espname_checkbox:get() then
+            --         local r, g, b, a = ui_state.espnamecolor_picker:get()
+            --         local name = "Placeholder"
+            --         local tw, th = render.measure_text(g.font, name)
+            --         render.draw_text(g.font, name, box_center_x - tw / 2, rect.top - 16, r, g, b, a, 1, 0,0,0,a)
+            --     end
+
+            --     if ui_state.moneyesp_checkbox:get() then
+            --         local r, g, b, a = ui_state.moneycolor_picker:get()
+            --         local money = "$1337"
+            --         render.draw_text(g.small_font, money, rect.right + 4, rect.top, r, g, b, a, 1, 0,0,0,a)
+            --     end
+
+            --     local health = 85
+            --     local health_bar_h = math.clamp(box_height * (health / 100.0), 0, box_height)
+            --     render.draw_rectangle(rect.left - 6, rect.top - 1, 4, box_height + 2, 0,0,0,180, 0, true)
+            --     render.draw_rectangle(rect.left - 5, rect.top + (box_height - health_bar_h), 2, health_bar_h, 50, 200, 50, 255, 0, true)
+                
+            --     local armor = 75
+            --     local armor_bar_h = math.clamp(box_height * (armor / 100.0), 0, box_height)
+            --     render.draw_rectangle(rect.left - 11, rect.top - 1, 4, box_height + 2, 0,0,0,180, 0, true)
+            --     render.draw_rectangle(rect.left - 10, rect.top + (box_height - armor_bar_h), 2, armor_bar_h, 100, 150, 255, 255, 0, true)
+            
+            --     if ui_state.skeleton_checkbox:get() then
+            --         local r, g, b, a = ui_state.skeletoncolor_picker:get()
+            --         local bones_2d = {
+            --             head = vec2(box_center_x, rect.top + (box_height * 0.05)),
+            --             neck_0 = vec2(box_center_x, rect.top + (box_height * 0.15)),
+            --             spine_1 = vec2(box_center_x, rect.top + (box_height * 0.30)),
+            --             spine_2 = vec2(box_center_x, rect.top + (box_height * 0.45)),
+            --             pelvis = vec2(box_center_x, rect.top + (box_height * 0.55)),
+            --             arm_upper_L = vec2(rect.left + (box_width * 0.2), rect.top + (box_height * 0.32)),
+            --             arm_lower_L = vec2(rect.left + (box_width * 0.1), rect.top + (box_height * 0.50)),
+            --             hand_L = vec2(rect.left + (box_width * 0.05), rect.top + (box_height * 0.65)),
+            --             arm_upper_R = vec2(rect.right - (box_width * 0.2), rect.top + (box_height * 0.32)),
+            --             arm_lower_R = vec2(rect.right - (box_width * 0.1), rect.top + (box_height * 0.50)),
+            --             hand_R = vec2(rect.right - (box_width * 0.05), rect.top + (box_height * 0.65)),
+            --             leg_upper_L = vec2(box_center_x - (box_width * 0.15), rect.top + (box_height * 0.75)),
+            --             leg_lower_L = vec2(box_center_x - (box_width * 0.2), rect.top + (box_height * 0.90)),
+            --             ankle_L = vec2(box_center_x - (box_width * 0.25), rect.bottom),
+            --             leg_upper_R = vec2(box_center_x + (box_width * 0.15), rect.top + (box_height * 0.75)),
+            --             leg_lower_R = vec2(box_center_x + (box_width * 0.2), rect.top + (box_height * 0.90)),
+            --             ankle_R = vec2(box_center_x + (box_width * 0.25), rect.bottom)
+            --         }
+            --         draw_skeleton(bones_2d)
+            --     end
+            -- end
         end
+            draw_esp_placeholder()
         return
     end
+
+
+
 
     if ui_state.utft_checkbox:get() then
         process.is_open = proc.is_attached()
@@ -1728,6 +1916,9 @@ end
 
 
 
+
+
+
 function handle_triggerbot()
 
     if not ui_state.trigger_bot_enable:get() then
@@ -1738,7 +1929,7 @@ function handle_triggerbot()
 
 
     if not ui_state.trigger_bot_key:is_active() or input.is_menu_open() then return end
-    if (winapi.get_tickcount64() - trigger_last_shot_time) < 100 then return end -- 100ms base cooldown
+    if (winapi.get_tickcount64() - trigger_last_shot_time) < 100 then return end 
 
     local client_dll = proc.find_module("client.dll")
     if not client_dll then return end
@@ -1775,6 +1966,7 @@ function handle_triggerbot()
     end
 end
 
+
 engine.register_on_engine_tick(function()
     if ui_state and ui_state.specpos and not speclist_dragging then
         local val = ui_state.specpos:get()
@@ -1795,6 +1987,10 @@ engine.register_on_engine_tick(function()
             end
         end
     end
+
+
+   
+
     update_spectator_list()
     draw_spectators()
     update_bomb_panel()
@@ -1805,6 +2001,8 @@ engine.register_on_engine_tick(function()
     handle_smoke_modulator()
     handle_triggerbot()
 
+    
+
     config.espEnabled = ui_state.esp_checkbox and ui_state.esp_checkbox:get() or false
     config.skeletonRendering = ui_state.skeleton_checkbox and ui_state.skeleton_checkbox:get() or false
     config.boxRendering = ui_state.espbox_checkbox and ui_state.espbox_checkbox:get() or false
@@ -1813,14 +2011,18 @@ engine.register_on_engine_tick(function()
 
     if not config.espEnabled then return end
 
-    if not proc.is_attached() then return end
+
+
+   
+        if not proc.is_attached() then return end
     if proc.did_exit() then return end
 
-    local client_dll = proc.find_module("client.dll")
-    if not client_dll and config.debug_logging and not log_once.client_dll then
+     local client_dll = proc.find_module("client.dll")
+      if not client_dll and config.debug_logging and not log_once.client_dll then
         engine.log("[ESP DBG] Could not find client.dll.", 255, 0, 0, 255); log_once.client_dll = true
         return
     end
+  
 
     local view_matrix = {}
     for i = 0, 15 do table.insert(view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
@@ -1861,7 +2063,9 @@ engine.register_on_engine_tick(function()
         if proc.read_int32(entity_pawn + offsets.m_lifeState) ~= 256 then goto continue end
         local health = proc.read_int32(entity_pawn + offsets.m_iHealth)
         if health <= 0 or health > 100 then goto continue end
-
+        local is_scoped = proc.read_int8(entity_pawn + offsets.m_bIsScoped) > 0
+        local is_flashed = proc.read_float(entity_pawn + offsets.m_flFlashDuration) > 0
+        local armor = proc.read_int32(entity_pawn + offsets.m_ArmorValue)
         local team = proc.read_int32(entity_pawn + offsets.m_iTeamNum)
         if config.teamCheck and team == local_team then goto continue end
         
@@ -1898,10 +2102,14 @@ engine.register_on_engine_tick(function()
         local box_width = box_height / 2.0
 
         local head_bottom_screen = world_to_screen(view_matrix, vec3(bones_3d.head.x, bones_3d.head.y, bones_3d.head.z - 5))
-
+local weapon_name = get_active_weapon_name(entity_pawn)
         local entity_to_render = {
             health = health, team = team, distance = local_origin:distance(origin_3d),
-            money = money, 
+            is_scoped = is_scoped,     
+            is_flashed = is_flashed, 
+            distance = get_distance_manual(origin_3d, local_origin),
+            money = money, armor = armor,
+            weapon = weapon_name,
             rect = {
                 top = bones_2d.head.y, bottom = screen_pos_feet.y,
                 left = bones_2d.head.x - (box_width / 2), right = bones_2d.head.x + (box_width / 2)
@@ -1916,6 +2124,13 @@ engine.register_on_engine_tick(function()
         ::continue::
     end
 end)
+
+function get_distance_manual(pos1, pos2)
+    local dx = pos1.x - pos2.x
+    local dy = pos1.y - pos2.y
+    local dz = pos1.z - pos2.z
+    return math.sqrt(dx*dx + dy*dy + dz*dz)
+end
 
 function world_to_screen(view_matrix, position)
     local screen_width, screen_height = render.get_viewport_size()
@@ -1940,13 +2155,41 @@ function world_to_screen(view_matrix, position)
     return vec2(x, y)
 end
 
+function get_active_weapon_name(entity_pawn)
+    if not entity_pawn or entity_pawn == 0 then return nil end
+
+    local clipping_weapon_ptr = proc.read_int64(entity_pawn + offsets.m_pClippingWeapon)
+    if not clipping_weapon_ptr or clipping_weapon_ptr == 0 then return nil end
+
+    local item_definition_ptr = proc.read_int64(clipping_weapon_ptr + 0x10)
+    if not item_definition_ptr or item_definition_ptr == 0 then return nil end
+    
+    local designer_name_ptr = proc.read_int64(item_definition_ptr + 0x20)
+    if not designer_name_ptr or designer_name_ptr == 0 then return nil end
+
+    local weapon_name_raw = proc.read_string(designer_name_ptr, 40)
+    if not weapon_name_raw or weapon_name_raw == "" then return "UNKNOWN" end
+
+    local _, _, weapon_name = string.find(weapon_name_raw, "weapon_(.+)")
+    if weapon_name then
+        return string.upper(weapon_name) 
+    end
+
+    return "ERROR" 
+end
+
+
+
+
 local skel_color = ui_state.skeletoncolor_picker and {ui_state.skeletoncolor_picker:get()} or {255, 255, 255, 255}
 local skel_r, skel_g, skel_b, skel_a = table.unpack(skel_color)
 
+
 function draw_skeleton(bones_2d)
+    local r, g, b, a = ui_state.skeletoncolor_picker:get()
     local function connect(b1, b2)
         if bones_2d[b1] and bones_2d[b2] then
-            render.draw_line(bones_2d[b1].x, bones_2d[b1].y, bones_2d[b2].x, bones_2d[b2].y, skel_r, skel_g, skel_b, skel_a, 1)
+             render.draw_line(bones_2d[b1].x, bones_2d[b1].y, bones_2d[b2].x, bones_2d[b2].y, r, g, b, a, 1)
         end
     end
 
@@ -1958,59 +2201,139 @@ function draw_skeleton(bones_2d)
 end
 
 function render_entity_info(entity)
-    local color_r, color_g, color_b = 255, 120, 122
-    if entity.team == 3 then
-        color_r, color_g, color_b = 120, 142, 255
+    local rect = entity.rect
+    local box_height = rect.bottom - rect.top
+    if box_height == 0 then return end
+    local box_width = rect.right - rect.left
+
+    if ui_state.espbox_checkbox:get() then
+        local r,g,b,a = ui_state.boxcolor_picker:get()
+        local box_type_index = ui_state.esp_box_type:get()
+        if box_type_index == 0 then 
+            render.draw_rectangle(rect.left-1, rect.top-1, box_width+2, box_height+2, 0,0,0,a,1,false)
+            render.draw_rectangle(rect.left, rect.top, box_width, box_height, r,g,b,a,1,false)
+        elseif box_type_index == 1 then
+            local cs=box_width*0.25;render.draw_line(rect.left,rect.top,rect.left+cs,rect.top,r,g,b,a,1);render.draw_line(rect.left,rect.top,rect.left,rect.top+cs,r,g,b,a,1);render.draw_line(rect.right,rect.top,rect.right-cs,rect.top,r,g,b,a,1);render.draw_line(rect.right,rect.top,rect.right,rect.top+cs,r,g,b,a,1);render.draw_line(rect.left,rect.bottom,rect.left+cs,rect.bottom,r,g,b,a,1);render.draw_line(rect.left,rect.bottom,rect.left,rect.bottom-cs,r,g,b,a,1);render.draw_line(rect.right,rect.bottom,rect.right-cs,rect.bottom,r,g,b,a,1);render.draw_line(rect.right,rect.bottom,rect.right,rect.bottom-cs,r,g,b,a,1)
+        end
     end
     
-    local outline_r, outline_g, outline_b, outline_a = 0, 0, 0, 200
-    local rect, box_height = entity.rect, entity.rect.bottom - entity.rect.top
+    local hp = entity.health/100; local h_h=box_height*hp; local hr=math.floor(255*(1-hp)); local hg=math.floor(255*hp);
+    render.draw_rectangle(rect.left-6, rect.top, 4, box_height, 0,0,0,180,1,true); render.draw_rectangle(rect.left-5, rect.top+(box_height-h_h), 2, h_h, hr,hg,0,255,1,true)
 
-    local box_color = ui_state.boxcolor_picker and {ui_state.boxcolor_picker:get()} or {255, 255, 255, 255}
-    local box_r, box_g, box_b, box_a = table.unpack(box_color)
-
-    if config.boxRendering then
-        render.draw_rectangle(rect.left - 1, rect.top - 1, rect.right-rect.left + 2, box_height + 2, outline_r, outline_g, outline_b, outline_a, 1, false)
-        render.draw_rectangle(rect.left + 1, rect.top + 1, rect.right-rect.left - 2, box_height - 2, outline_r, outline_g, outline_b, outline_a, 1, false)
-        render.draw_rectangle(rect.left, rect.top, rect.right - rect.left, box_height, box_r, box_g, box_b, 255, 1, false)
-    end
-
-    if config.headCircle and entity.head_pos then
-        local head_radius = math.abs(entity.head_pos.z - entity.head_pos.y) / 2
-        local center_y = entity.head_pos.y + head_radius
-        render.draw_circle(entity.head_pos.x, center_y, head_radius + 1, outline_r, outline_g, outline_b, outline_a, 1, false)
-        render.draw_circle(entity.head_pos.x, center_y, head_radius, 255, 255, 255, 255, 1, false)
-    end
+    if entity.armor and entity.armor > 0 then local ap=entity.armor/100; local a_w=box_width*ap; render.draw_rectangle(rect.left,rect.bottom+3,box_width,4,0,0,0,180,1,true); render.draw_rectangle(rect.left,rect.bottom+4,a_w,2,100,150,255,255,1,true) end
     
-    if config.healthBarRendering then
-        local health_green_val = math.round(math.map(entity.health, 0, 100, 0, 255))
-        local health_bar_height = math.clamp((box_height) * (entity.health / 100.0), 1, box_height)
-        render.draw_rectangle(rect.left - 5, rect.top-1, 4, box_height + 2, outline_r, outline_g, outline_b, outline_a, 1, false)
-        render.draw_rectangle(rect.left - 4, rect.top + (box_height - health_bar_height), 2, health_bar_height, 255 - health_green_val, health_green_val, 50, 255, 1, true)
-    end
+    if ui_state.espname_checkbox:get() and entity.name and entity.name ~= "" then local r,g,b,a=ui_state.espnamecolor_picker:get(); local tw,th=render.measure_text(esp_fonts.name, entity.name); render.draw_text(esp_fonts.name, entity.name, rect.left+(box_width-tw)/2, rect.top-16, r,g,b,255,1,0,0,0,255) end
     
-    local name_color = ui_state.espnamecolor_picker and {ui_state.espnamecolor_picker:get()} or {255, 255, 255, 255}
-    local name_r, name_g, name_b, name_a = table.unpack(name_color)
+    if ui_state.enable_pweapon_esp:get() and entity.weapon and entity.weapon ~= "" then local tw,th=render.measure_text(esp_fonts.weapon, entity.weapon); local y_pos=rect.bottom+(entity.armor and entity.armor > 0 and 8 or 4); render.draw_text(esp_fonts.weapon, entity.weapon, rect.left+(box_width-tw)/2, y_pos, 255,255,255,255,1,0,0,0,255) end
 
-    if config.nameRendering and entity.name and entity.name ~= "" then
-        local text_x = (rect.left + rect.right) / 2 - (#entity.name * 3.5)
-        local text_y = rect.top - 14
-        render.draw_text(g.font, entity.name, text_x, text_y, name_r, name_g, name_b, name_a, 1, outline_r, outline_g, outline_b, outline_a)
+    local flags = {}
+    local flag_y_offset = rect.top
+
+    if ui_state.moneyesp_checkbox:get() and entity.money and entity.money > -1 then
+        table.insert(flags, { text = "$" .. entity.money, color = {ui_state.moneycolor_picker:get()} })
+    end
+    if ui_state.scoped_flag_checkbox:get() and entity.is_scoped then
+        table.insert(flags, { text = "SCOPED", color = {255, 200, 100, 255} })
+    end
+    if ui_state.flashed_flag_checkbox:get() and entity.is_flashed then
+        table.insert(flags, { text = "FLASHED", color = {255, 255, 255, 255} })
     end
 
-   if config.moneyRendering and entity.money and entity.money > -1 then
-        local money_r, money_g, money_b, money_a = ui_state.moneycolor_picker:get()
-        local money_text = "$" .. tostring(entity.money)
-        local text_x = rect.right + 4 
-        local text_y = rect.top 
-        render.draw_text(g.small_font, money_text, text_x, text_y, money_r, money_g, money_b, money_a, 1, outline_r, outline_g, outline_b, outline_a)
+    for _, flag in ipairs(flags) do
+        local r,g,b,a = table.unpack(flag.color)
+        local tw,th = render.measure_text(esp_fonts.weapon, flag.text)
+        render.draw_text(esp_fonts.weapon, flag.text, rect.right + 5, flag_y_offset, r, g, b, a, 1, 0,0,0,255)
+        flag_y_offset = flag_y_offset + th + 2
     end
-
-    if config.healthTextRendering and not config.healthBarRendering then
-        local hp_str = tostring(entity.health)
-        render.draw_text(g.font, hp_str, rect.left-8-(#hp_str*8), rect.top, 0, 255, 50, 255, 1, outline_r, outline_g, outline_b, outline_a)
+    if ui_state.distance_esp_checkbox:get() then
+        local distance_in_meters = math.floor(entity.distance / 50) 
+        local distance_text = string.format("[%d M]", distance_in_meters)
+        local r, g, b, a = ui_state.distance_color_picker:get()
+        local tw, th = render.measure_text(esp_fonts.font, distance_text)
+        
+        local y_pos = rect.bottom + (entity.armor and entity.armor > 0 and 8 or 4)
+        if ui_state.enable_pweapon_esp:get() and entity.weapon and entity.weapon ~= "" then
+            y_pos = y_pos + 10
+        end
+        
+        render.draw_text(esp_fonts.font, distance_text, rect.left + (box_width - tw) / 2, y_pos, r, g, b, a, 1, 0,0,0,a)
     end
 end
+
+
+    local client_dll = proc.find_module("client.dll")
+    if client_dll == 0 then return end
+ local game = {}
+    game.client_dll = client_dll
+    game.view_matrix = {}
+    for i = 0, 15 do table.insert(game.view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
+    
+    game.local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if game.local_pawn == 0 then return end
+    game.local_team = proc.read_int32(game.local_pawn + offsets.m_iTeamNum)
+    game.entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+    
+    game.entities = {}
+
+function handle_aimbot(game)
+    if not ui_state.aim_enabled:get() or not ui_state.aim_key:is_active() then return end
+    
+    local screen_w, screen_h = render.get_viewport_size()
+    local crosshair_pos = vec2(screen_w/2, screen_h/2)
+    local fov = ui_state.aim_fov:get()
+    
+    if ui_state.draw_fov_circle:get() then render.draw_circle(crosshair_pos.x, crosshair_pos.y, fov, 255,255,255,50, 1.5, false) end
+    
+    local best_target = { dist = fov + 1, bone_pos = nil }
+    
+    local hitbox_id = BONE_MAP.head
+    local selection = ui_state.aim_hitbox:get()
+    if selection == 1 then hitbox_id = BONE_MAP.neck
+    elseif selection == 2 then hitbox_id = BONE_MAP.spine
+    elseif selection == 3 then hitbox_id = BONE_MAP.pelvis end
+    
+    for _, entity in ipairs(game.entities) do
+        if entity.team ~= game.local_team and (not ui_state.aim_vis_check:get() or is_player_visible(entity.pawn_address)) then
+            local bone_pos = entity.bones[BONE_MAP[hitbox_id]]
+            if not bone_pos then 
+                bone_pos = entity.bones.head
+            end
+
+            if bone_pos then
+                local screen_pos = world_to_screen(game.view_matrix, bone_pos)
+                if screen_pos then
+                    local dist = crosshair_pos:distance(screen_pos)
+                    if dist < best_target.dist then
+                        best_target = { dist = dist, bone_pos = bone_pos }
+                    end
+                end
+            end
+        end
+    end
+
+    if best_target.bone_pos then
+        local view_offset = vec3.read_float(game.local_pawn + offsets.m_vecViewOffset)
+        local camera_pos = game.local_origin + view_offset
+        
+        local direction = (best_target.bone_pos - camera_pos):normalize()
+        direction.z = math.clamp(direction.z, -1.0, 1.0)
+        
+        local current_angles = vec3.read_float(game.client_dll + offsets.dwViewAngles)
+        local pitch = -math.deg(math.asin(direction.z))
+        local yaw = math.deg(vec2(direction.x, direction.y):angle())
+        local new_angles = vec3(pitch, yaw, 0):normalize_angles()
+
+        local delta = new_angles - current_angles
+        delta.y = math.wrap(delta.y, -180.0, 180.0)
+
+        local smoothing = ui_state.aim_smooth:get()
+        local smoothed_angles = current_angles + (delta / smoothing)
+        
+        vec3.write_float(game.client_dll + offsets.dwViewAngles, smoothed_angles)
+    end
+end
+
+
 
 local radar = {
     x = 200, y = 200,
@@ -2146,11 +2469,12 @@ local function on_engine_tick()
     end
 
     if not g.client_module then return end
-    
+   
     handle_dragging()
     update_data()
     update_dynamic_scale()
     draw_radar()
+
 end
 
 local function on_script_load_radar()
@@ -2380,3 +2704,485 @@ end
 engine.register_on_engine_tick(handle_world_esp)
 
 local log_once = {}
+
+
+local WEAPON_MAP = {
+    [32] = "P2000", [61] = "USP-S", [4] = "Glock", [2] = "Dual Berettas", [36] = "P250",
+    [30] = "Tec-9", [63] = "CZ75-Auto", [1] = "Desert Eagle", [3] = "Five-SeveN",
+    [64] = "R8", [35] = "Nova", [25] = "XM1014", [27] = "MAG-7", [29] = "Sawed-Off",
+    [14] = "M249", [28] = "Negev", [17] = "MAC-10", [23] = "MP5-SD", [24] = "UMP-45",
+    [19] = "P90", [26] = "Bizon", [34] = "MP9", [33] = "MP7", [10] = "FAMAS",
+    [16] = "M4A4", [60] = "M4A1-S", [8] = "AUG", [43] = "Galil", [7] = "AK-47",
+    [39] = "SG 553", [40] = "SSG 08", [9] = "AWP", [38] = "SCAR-20", [11] = "G3SG1",
+    [44] = "Hegrenade", [45] = "Smoke", [46] = "Molotov", [47] = "Decoy", [49] = "C4",
+    [42] = "Knife", [59] = "Knife", [500] = "Bayonet", [505] = "Flip Knife", [506] = "Gut Knife",
+    [507] = "Karambit", [508] = "M9 Bayonet", [512] = "Falchion", [515] = "Butterfly", [520] = "Navaja"
+}
+
+local BONE_MAP = {
+    head = 6, neck = 5, spine = 4, pelvis = 0,
+    left_shoulder = 8, left_elbow = 9, left_hand = 10,
+    right_shoulder = 13, right_elbow = 14, right_hand = 15,
+    left_hip = 22, left_knee = 23, left_ankle = 24,
+    right_hip = 25, right_knee = 26, right_ankle = 27
+}
+
+local BONE_CONNECTIONS = {
+    {"head", "neck"}, {"neck", "spine"}, {"spine", "pelvis"},
+    {"spine", "left_shoulder"}, {"left_shoulder", "left_elbow"}, {"left_elbow", "left_hand"},
+    {"spine", "right_shoulder"}, {"right_shoulder", "right_elbow"}, {"right_elbow", "right_hand"},
+    {"pelvis", "left_hip"}, {"left_hip", "left_knee"}, {"left_knee", "left_ankle"},
+    {"pelvis", "right_hip"}, {"right_hip", "right_knee"}, {"right_knee", "right_ankle"}
+}
+
+local globals = {
+    aimbot_state = {
+        locked_target_pawn = 0,
+        lock_lost_time = 0    
+    }
+}
+
+function is_player_visible(player_pawn, local_player_index)
+    if not player_pawn or player_pawn == 0 or not local_player_index or local_player_index < 1 then
+        return false
+    end
+    local spotted_by_mask_addr = player_pawn + offsets.m_entitySpottedState + offsets.m_bSpottedByMask
+    local mask = proc.read_int64(spotted_by_mask_addr)
+
+    return ((mask >> (local_player_index - 1)) & 1) == 1
+end
+
+function world_to_screen(view_matrix, position_3d)
+    local screen_w = view_matrix[13] * position_3d.x + view_matrix[14] * position_3d.y + view_matrix[15] * position_3d.z +
+    view_matrix[16]
+    if screen_w < 0.01 then return nil end
+
+    local screen_x = view_matrix[1] * position_3d.x + view_matrix[2] * position_3d.y + view_matrix[3] * position_3d.z +
+    view_matrix[4]
+    local screen_y = view_matrix[5] * position_3d.x + view_matrix[6] * position_3d.y + view_matrix[7] * position_3d.z +
+    view_matrix[8]
+    local inv_w = 1.0 / screen_w
+
+    local sx = screen_x * inv_w
+    local sy = screen_y * inv_w
+    local screen_width, screen_height = render.get_viewport_size()
+
+    local x = (screen_width / 2.0) + (sx * screen_width) / 2.0
+    local y = (screen_height / 2.0) - (sy * screen_height) / 2.0
+
+    return vec2(x, y)
+end
+
+function get_weapon_name(index)
+    return WEAPON_MAP[index] or "Unknown"
+end
+
+function handle_aimbot(game, local_player_index)
+      if not ui_state.aim_enabled_checkbox:get() or not ui_state.aim_keybind:is_active() then 
+        return
+    end
+
+    local screen_width, screen_height = render.get_viewport_size()
+    local crosshair_x, crosshair_y = screen_width / 2, screen_height / 2
+    local fov = ui_state.aim_fov_slider:get() / 100 * (screen_width / 2)
+
+    if ui_state.draw_fov_circle_checkbox:get() then
+        render.draw_circle(crosshair_x, crosshair_y, fov, 255, 255, 255, 30, 1, false)
+    end
+
+    local best_target_pos, best_target_dist = nil, fov
+
+    for _, entity in ipairs(game.entities) do
+        if entity.team ~= game.local_team then
+            if not ui_state.aim_vis_check_checkbox:get() or is_player_visible(entity.pawn_address, local_player_index) then
+                local bone_to_use
+                local hitbox_selection = ui_state.aim_hitbox_combo:get()
+
+                if hitbox_selection == 0 then
+                    bone_to_use = entity.bones.head
+                elseif hitbox_selection == 1 then
+                    bone_to_use = entity.bones.neck
+                elseif hitbox_selection == 2 then
+                    bone_to_use = entity.bones.spine
+                elseif hitbox_selection == 3 then
+                    bone_to_use = entity.bones.pelvis
+                end
+
+                if bone_to_use then
+                    local target_pos_2d = world_to_screen(game.view_matrix, bone_to_use)
+                    if target_pos_2d then
+                        local dist_from_crosshair = math.sqrt((target_pos_2d.x - crosshair_x) ^ 2 +
+                        (target_pos_2d.y - crosshair_y) ^ 2)
+                        if dist_from_crosshair < best_target_dist then
+                            best_target_dist = dist_from_crosshair
+                            best_target_pos = bone_to_use
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if best_target_pos then
+        local smoothing_factor = ui_state.aim_smoothing_slider:get()
+        if smoothing_factor > 0 then
+            local target_2d = world_to_screen(game.view_matrix, best_target_pos)
+            if not target_2d then return end
+
+            local distance_x = target_2d.x - crosshair_x
+            local distance_y = target_2d.y - crosshair_y
+
+            local move_x = distance_x / smoothing_factor
+            local move_y = distance_y / smoothing_factor
+
+            if math.abs(distance_x) > 1 or math.abs(distance_y) > 1 then
+                input.simulate_mouse(math.floor(move_x + 0.5), math.floor(move_y + 0.5), 0x0001)
+            end
+        end
+    end
+end
+
+engine.register_on_engine_tick(function()
+    if not proc.is_attached() or proc.did_exit() then
+        return
+    end
+
+    local client_dll = proc.find_module("client.dll")
+    if client_dll == 0 then return end
+
+    local game = {}
+    game.client_dll = client_dll
+    game.view_matrix = {}
+    for i = 0, 15 do table.insert(game.view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
+
+    game.local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if game.local_pawn == 0 then return end
+    game.local_team = proc.read_int32(game.local_pawn + offsets.m_iTeamNum)
+    game.entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+
+    game.entities = {}
+
+    local list_entry_head = proc.read_int64(game.entity_list + 0x10)
+    for i = 1, 64 do
+        if list_entry_head == 0 then goto continue_main_loop end
+
+        local entity_controller = proc.read_int64(list_entry_head + 0x78 * (i & 0x1FF))
+        if entity_controller == 0 then goto continue_main_loop end
+
+        local pawn_handle = proc.read_int32(entity_controller + offsets.m_hPlayerPawn)
+        if pawn_handle == -1 or pawn_handle == 0 then goto continue_main_loop end
+
+        local list_entry2 = proc.read_int64(game.entity_list + 0x8 * ((pawn_handle & 0x7FFF) >> 9) + 16)
+        if list_entry2 == 0 then goto continue_main_loop end
+
+        local pawn_addr = proc.read_int64(list_entry2 + 0x78 * (pawn_handle & 0x1FF))
+        if pawn_addr == 0 or pawn_addr == game.local_pawn then goto continue_main_loop end
+
+        local life_state = proc.read_int32(pawn_addr + offsets.m_lifeState)
+        if life_state ~= 256 then goto continue_main_loop end
+
+        local health = proc.read_int32(pawn_addr + offsets.m_iHealth)
+        if health <= 0 or health > 100 then goto continue_main_loop end
+
+        local entity = {
+            controller = entity_controller,
+            pawn_address = pawn_addr,
+            pawn_handle = pawn_handle,
+            team = proc.read_int32(pawn_addr + offsets.m_iTeamNum),
+            health = health,
+            name = proc.read_string(entity_controller + offsets.m_iszPlayerName, 32),
+            origin = vec3.read_float(pawn_addr + 0x1320),
+            bones = {}
+        }
+
+        local game_scene_node = proc.read_int64(pawn_addr + offsets.m_pGameSceneNode)
+        local bone_array_ptr = proc.read_int64(game_scene_node + offsets.m_modelState + offsets.m_boneArray)
+
+        if bone_array_ptr ~= 0 then
+            for name, index in pairs(BONE_MAP) do
+                entity.bones[name] = vec3.read_float(bone_array_ptr + index * 32)
+            end
+        end
+
+        local wep_ptr = proc.read_int64(pawn_addr + offsets.m_pClippingWeapon)
+        if wep_ptr ~= 0 then
+            local wep_attr = proc.read_int64(wep_ptr + offsets.m_AttributeManager)
+            local wep_item = proc.read_int64(wep_attr + offsets.m_Item)
+            local wep_idx = proc.read_int16(wep_item + offsets.m_iItemDefinitionIndex)
+            entity.weapon_name = get_weapon_name(wep_idx)
+        else
+            entity.weapon_name = ""
+        end
+
+        table.insert(game.entities, entity)
+        ::continue_main_loop::
+    end
+    local local_player_index = nil
+    local local_player_controller = proc.read_int64(client_dll + offsets.dwLocalPlayerController)
+    if local_player_controller ~= 0 then
+        local list_entry_head_for_index = proc.read_int64(game.entity_list + 0x10)
+        for i = 1, 64 do
+            if list_entry_head_for_index == 0 then break end
+            local entity_controller_for_index = proc.read_int64(list_entry_head_for_index + 0x78 * (i & 0x1FF))
+            if entity_controller_for_index == local_player_controller then
+                local_player_index = i
+                break
+            end
+        end
+    end
+
+    if local_player_index then
+        handle_aimbot(game, local_player_index)
+    end
+end)
+
+
+
+
+
+local BONE_ID_HEAD = 6
+
+
+function get_head_position(pawn_address)
+    local game_scene = proc.read_int64(pawn_address + offsets.m_pGameSceneNode)
+    if not game_scene or game_scene == 0 then return nil end
+    
+    local bone_array_ptr = proc.read_int64(game_scene + offsets.m_boneArray_aim)
+    if not bone_array_ptr or bone_array_ptr == 0 then return nil end
+
+    return vec3.read_float(bone_array_ptr + BONE_ID_HEAD * 32)
+end
+
+
+function world_to_screen_manual(view_matrix_addr, position)
+    local screen_w, screen_h = render.get_viewport_size()
+    local vm = {}
+    for i=0,15 do table.insert(vm, proc.read_float(view_matrix_addr + (i*4))) end
+    local w = vm[13]*position.x + vm[14]*position.y + vm[15]*position.z + vm[16]
+    if w < 0.01 then return nil end
+    local sx = vm[1]*position.x + vm[2]*position.y + vm[3]*position.z + vm[4]
+    local sy = vm[5]*position.x + vm[6]*position.y + vm[7]*position.z + vm[8]
+    local x = (screen_w/2) + (0.5 * (sx/w) * screen_w + 0.5)
+    local y = (screen_h/2) - (0.5 * (sy/w) * screen_h + 0.5)
+    return vec2(x, y)
+end
+
+
+
+
+local function handle_ragebot()
+
+    if not proc.is_attached() or proc.did_exit() then return end
+    if not ui_state.rage_enabled:get() or not ui_state.aim_key:is_active() then return end
+
+    local client_dll = proc.find_module("client.dll"); if not client_dll then return end
+    
+    local local_player_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if not local_player_pawn or local_player_pawn == 0 then return end
+
+    local local_origin_node = proc.read_int64(local_player_pawn + offsets.m_pGameSceneNode)
+    if not local_origin_node or local_origin_node == 0 then return end
+    local local_origin = vec3.read_float(local_origin_node + offsets.m_nodeToWorld)
+    local view_offset = vec3.read_float(local_player_pawn + offsets.m_vecViewOffset)
+    local camera_pos = local_origin + view_offset
+
+    local screen_w, screen_h = render.get_viewport_size()
+    local crosshair_pos = vec2(screen_w / 2, screen_h / 2)
+    local fov_radius = ui_state.fov_slider:get()
+    
+    if ui_state.show_fov:get() then render.draw_circle(crosshair_pos.x, crosshair_pos.y, fov_radius, 255, 0, 0, 100, 1.5, false) end
+
+    local best_target = { distance = fov_radius + 1, bone_pos = nil }
+    local view_matrix_addr = client_dll + offsets.dwViewMatrix
+    local entity_list_addr = proc.read_int64(client_dll + offsets.dwEntityList)
+
+    for i = 1, 64 do
+        local player_pawn = 0
+        local list_entry = proc.read_int64(entity_list_addr + 0x8 * ((i >> 9) & 0x7F) + 0x10)
+        if list_entry and list_entry ~= 0 then
+            local player_controller = proc.read_int64(list_entry + 120 * (i & 0x1FF))
+            if player_controller and player_controller ~= 0 then
+                local pawn_handle = proc.read_int32(player_controller + offsets.m_hPlayerPawn)
+                if pawn_handle and pawn_handle ~= -1 then
+                    local pawn_handle_masked = pawn_handle & 0x7FFF
+                    local list_entry2 = proc.read_int64(entity_list_addr + 0x8 * ((pawn_handle_masked >> 9) & 0x7F) + 0x10)
+                    if list_entry2 and list_entry2 ~= 0 then
+                        player_pawn = proc.read_int64(list_entry2 + 120 * (pawn_handle_masked & 0x1FF))
+                    end
+                end
+            end
+        end
+     
+        if player_pawn and player_pawn ~= 0 and player_pawn ~= local_player_pawn then
+            if proc.read_int32(player_pawn + offsets.m_iHealth) > 0 and proc.read_int32(player_pawn + offsets.m_iTeamNum) ~= proc.read_int32(local_player_pawn + offsets.m_iTeamNum) then
+
+                local head_pos = nil
+                local game_scene_node = proc.read_int64(player_pawn + offsets.m_pGameSceneNode)
+                if game_scene_node and game_scene_node ~= 0 then
+                    local bone_array_ptr = proc.read_int64(game_scene_node + offsets.m_modelState + offsets.m_boneArray)
+                    if bone_array_ptr and bone_array_ptr ~= 0 then
+                        head_pos = vec3.read_float(bone_array_ptr + BONE_MAP.head * 32)
+                    end
+                end
+
+                if head_pos then
+                    local screen_pos = world_to_screen_manual(view_matrix_addr, head_pos)
+                    if screen_pos then
+                        local distance = screen_pos:distance(crosshair_pos)
+                        if distance < best_target.distance then
+                            best_target = { distance = distance, bone_pos = head_pos }
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if best_target.bone_pos then
+        local direction = (best_target.bone_pos - camera_pos):normalize()
+        direction.z = math.clamp(direction.z, -1.0, 1.0)
+        
+        local pitch = -math.deg(math.asin(direction.z))
+        local yaw = math.deg(vec2(direction.x, direction.y):angle())
+        
+        local new_angles = vec3(pitch, yaw, 0)
+        new_angles.x = math.clamp(new_angles.x, -89.0, 89.0)
+        new_angles.y = math.wrap(new_angles.y, -180.0, 180.0)
+        new_angles.z = 0 
+        
+        vec3.write_float(client_dll + offsets.dwViewAngles, new_angles)
+    end
+end
+
+engine.register_on_engine_tick(handle_ragebot)
+
+
+if _G.g_spin_yaw == nil then
+    _G.g_spin_yaw = 0
+end
+
+
+
+
+local function handle_anti_aim()
+    if not ui_state.aa_enabled:get() or input.is_menu_open() or ui_state.disable_key:is_active() then
+        return
+    end
+
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
+    
+    local local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if not local_pawn or local_pawn == 0 then return end
+
+
+    local real_view_angles = vec3.read_float(client_dll + offsets.dwViewAngles)
+    local fake_angles = vec3(0, 0, 0)
+
+
+    local pitch_mode = ui_state.pitch_mode:get()
+    if pitch_mode == 1 then 
+        fake_angles.x = 89.0
+    elseif pitch_mode == 2 then 
+        fake_angles.x = -89.0
+    elseif pitch_mode == 3 then 
+        fake_angles.x = math.random(-89, 89)
+    else 
+        fake_angles.x = real_view_angles.x
+    end
+
+    local yaw_mode = ui_state.yaw_mode:get()
+    local base_yaw = real_view_angles.y 
+    
+    if yaw_mode == 1 then 
+        base_yaw = real_view_angles.y + 180.0
+    elseif yaw_mode == 2 then 
+        _G.g_spin_yaw = _G.g_spin_yaw + ui_state.spin_speed:get()
+        if _G.g_spin_yaw > 180 then _G.g_spin_yaw = -180 end 
+        if _G.g_spin_yaw < -180 then _G.g_spin_yaw = 180 end
+        base_yaw = _G.g_spin_yaw
+    end
+    
+
+    base_yaw = base_yaw + ui_state.yaw_additive:get()
+    if ui_state.jitter_enabled:get() then
+        local jitter_amount = ui_state.jitter_range:get()
+        base_yaw = base_yaw + (math.random() * 2 * jitter_amount) - jitter_amount
+    end
+
+    fake_angles.y = base_yaw
+    
+
+    fake_angles = fake_angles:normalize_angles()
+
+    for i = 1, 25000 do
+        vec3.write_float(local_pawn + offsets.v_angle, fake_angles)
+    end
+end
+
+
+function main()
+    if not proc.is_attached() then
+        engine.log("Anti-Aim Error: Please attach to cs2.exe first.", 255, 100, 100, 255)
+        return
+    end
+    
+    engine.register_on_engine_tick(handle_anti_aim)
+    engine.log("Dynamic Anti-Aim (Stable Final Version) Loaded.", 255, 100, 100, 255)
+end
+
+main()
+
+
+function patch_byte(address, size, patch_bytes)
+    if type(address) ~= "number" or type(size) ~= "number" or type(patch_bytes) ~= "table" then
+        engine.log("Invalid parameters passed to patch()", 255, 0, 0, 255)
+        return
+    end
+
+    if #patch_bytes ~= size then
+        engine.log("Patch size mismatch: expected " .. size .. ", got " .. #patch_bytes, 255, 255, 0, 255)
+        return
+    end
+    
+    for i = 0, size - 1 do
+        local byte = patch_bytes[i + 1]
+        if type(byte) ~= "number" or byte < 0 or byte > 255 then
+            engine.log("Invalid byte at index " .. (i + 1) .. ": " .. tostring(byte), 255, 0, 0, 255)
+            return
+        end
+
+        proc.write_int8(address + i, byte)
+    end
+
+    engine.log(string.format("Patched %d bytes at 0x%X", size, address), 0, 255, 0, 255)
+end
+
+if client_dll then
+    local address = client_dll + 0x7E3697 
+    local size = 2
+    local patch = { 0x74, 0x10 }
+    patch_byte(address, 2, patch)
+end
+
+
+local function update_thirdperson_view()
+    if not proc.is_attached() or not client_dll then
+        return
+    end
+if not ui_state.thirdperson_enabled:get() then
+        proc.write_int8(client_dll + offsets.dwCSGOInput + offsets.m_bCameraInThirdPerson, 0)
+        return 
+    end
+
+
+    if ui_state.thirdperson_key:is_active() then
+        proc.write_int8(client_dll + offsets.dwCSGOInput + offsets.m_bCameraInThirdPerson, 100)
+
+    else
+
+        proc.write_int8(client_dll + offsets.dwCSGOInput + offsets.m_bCameraInThirdPerson, 0)
+    end
+end
+
+engine.register_on_engine_tick(update_thirdperson_view)
