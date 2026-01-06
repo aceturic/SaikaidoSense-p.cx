@@ -1604,6 +1604,25 @@ on_frame = polyfill.on_frame
 on_unload = polyfill.on_unload
 
 
+local REFERENCE_HEIGHT = 1080 
+_G.G_Scale = 1.0
+
+-- Define S globally so the error "attempt to call global 'S' (a nil value)" is fixed
+function S(pixel_value)
+    return math.floor(pixel_value * _G.G_Scale)
+end
+
+local function UpdateScale()
+    local sw, sh = render.get_viewport_size()
+    if sh and sh > 0 then
+        _G.G_Scale = sh / REFERENCE_HEIGHT
+    end
+end
+
+-- Update immediately
+UpdateScale()
+engine.register_on_engine_tick(UpdateScale)
+
 local STATE_IDLE = 0
 local STATE_WAITING_FOR_PROCESS = 1
 local STATE_WAITING_FOR_GAME = 2
@@ -1616,11 +1635,10 @@ local g_btn_anim = 0
 local g_spinner_rot = 0
 
 -- 3. Fonts
-local f_title = render.create_font("Verdana", 28, 700)
-local f_sub   = render.create_font("Verdana", 12, 400)
-local f_btn   = render.create_font("Verdana", 14, 700)
-local f_card  = render.create_font("Verdana", 16, 600)
-
+local f_title = render.create_font("Verdana", S(28), 700)
+local f_sub   = render.create_font("Verdana", S(12), 400)
+local f_btn   = render.create_font("Verdana", S(14), 700)
+local f_card  = render.create_font("Verdana", S(16), 600)
 -- 4. Forward Declarations
 local InitializeFeatures = nil 
 local MainGameLoop = nil 
@@ -1651,7 +1669,7 @@ local function DrawModernLoader()
     if a < 5 then return end
 
     local sw, sh = render.get_viewport_size()
-    local w, h = 600, 380
+    local w, h = S(600), S(380) -- Scaled
     local x, y = (sw/2) - (w/2), (sh/2) - (h/2)
     local mx, my = input.get_mouse_position()
 
@@ -1663,41 +1681,41 @@ local function DrawModernLoader()
     render.draw_rectangle(x-2, y-2, w+4, h+4, c_accent[1], c_accent[2], c_accent[3], a, 0, true, 10)
     render.draw_rectangle(x, y, w, h, c_bg[1], c_bg[2], c_bg[3], a, 0, true, 8)
     
-    local sb_w = 180
+    local sb_w = S(180) -- Scaled
     render.draw_rectangle(x, y, sb_w, h, c_sidebar[1], c_sidebar[2], c_sidebar[3], a, 0, true, 8)
-    render.draw_rectangle(x + sb_w - 10, y, 10, h, c_sidebar[1], c_sidebar[2], c_sidebar[3], a, 0, true, 0) -- Square off right side
+    render.draw_rectangle(x + sb_w - 10, y, 10, h, c_sidebar[1], c_sidebar[2], c_sidebar[3], a, 0, true, 0) 
 
-    render.draw_text(f_title, "SHOOK", x + 25, y + 30, c_accent[1], c_accent[2], c_accent[3], a, 0,0,0,0,0)
-    render.draw_text(f_sub, "External solution", x + 25, y + 60, 150, 150, 150, a, 0,0,0,0,0)
+    render.draw_text(f_title, "SHOOK", x + S(25), y + S(30), c_accent[1], c_accent[2], c_accent[3], a, 0,0,0,0,0)
+    render.draw_text(f_sub, "External solution", x + S(25), y + S(60), 150, 150, 150, a, 0,0,0,0,0)
 
-    local u_y = y + h - 60
-    render.draw_circle(x + 35, u_y + 20, 18, 50, 50, 60, a, 0, true)
-    render.draw_text(f_btn, "S", x + 30, u_y + 12, 255, 255, 255, a, 0,0,0,0,0)
-    render.draw_text(f_btn, engine.get_username(), x + 65, u_y + 8, 220, 220, 220, a, 0,0,0,0,0)
-    render.draw_text(f_sub, "Lifetime Sub", x + 65, u_y + 26, 0, 255, 100, a, 0,0,0,0,0)
-    render.draw_line(x + 20, u_y - 10, x + sb_w - 20, u_y - 10, 60, 60, 70, a, 1)
+    local u_y = y + h - S(60)
+    render.draw_circle(x + S(35), u_y + S(20), S(18), 50, 50, 60, a, 0, true)
+    render.draw_text(f_btn, "S", x + S(30), u_y + S(12), 255, 255, 255, a, 0,0,0,0,0)
+    render.draw_text(f_btn, engine.get_username(), x + S(65), u_y + S(8), 220, 220, 220, a, 0,0,0,0,0)
+    render.draw_text(f_sub, "Lifetime Sub", x + S(65), u_y + S(26), 0, 255, 100, a, 0,0,0,0,0)
+    render.draw_line(x + S(20), u_y - S(10), x + sb_w - S(20), u_y - S(10), 60, 60, 70, a, 1)
 
-    local cx = x + sb_w + 20
-    local cy = y + 20
-    local cw = w - sb_w - 40
+    local cx = x + sb_w + S(20)
+    local cy = y + S(20)
+    local cw = w - sb_w - S(40)
     
-    render.draw_text(f_card, "Subscription Status", cx, cy + 10, 255, 255, 255, a, 0,0,0,0,0)
+    render.draw_text(f_card, "Subscription Status", cx, cy + S(10), 255, 255, 255, a, 0,0,0,0,0)
 
-    local card_y = cy + 50
-    local card_h = 80
+    local card_y = cy + S(50)
+    local card_h = S(80)
     
     render.draw_rectangle(cx, card_y, cw, card_h, c_card[1], c_card[2], c_card[3], a, 0, true, 6)
     render.draw_rectangle(cx, card_y, cw, card_h, 60, 60, 70, a, 1, false, 6)
 
-    render.draw_rectangle(cx + 15, card_y + 15, 50, 50, c_accent[1], c_accent[2], c_accent[3], a, 0, true, 4)
-    render.draw_text(f_title, "CS2", cx + 18, card_y + 22, 255, 255, 255, a, 0,0,0,0,0)
+    render.draw_rectangle(cx + S(15), card_y + S(15), S(50), S(50), c_accent[1], c_accent[2], c_accent[3], a, 0, true, 4)
+    render.draw_text(f_title, "CS2", cx + S(18), card_y + S(22), 255, 255, 255, a, 0,0,0,0,0)
 
-    render.draw_text(f_card, "Counter-Strike 2", cx + 80, card_y + 15, 255, 255, 255, a, 0,0,0,0,0)
-    render.draw_text(f_sub, "Status: Undetected", cx + 80, card_y + 40, 100, 255, 100, a, 0,0,0,0,0)
+    render.draw_text(f_card, "Counter-Strike 2", cx + S(80), card_y + S(15), 255, 255, 255, a, 0,0,0,0,0)
+    render.draw_text(f_sub, "Status: Undetected", cx + S(80), card_y + S(40), 100, 255, 100, a, 0,0,0,0,0)
 
-    local btn_w, btn_h = 140, 30
-    local btn_x = cx + cw - btn_w - 15
-    local btn_y = card_y + card_h - btn_h - 15
+    local btn_w, btn_h = S(140), S(30)
+    local btn_x = cx + cw - btn_w - S(15)
+    local btn_y = card_y + card_h - btn_h - S(15)
     
     if g_current_state == STATE_IDLE then
         local hovered = mx >= btn_x and mx <= btn_x + btn_w and my >= btn_y and my <= btn_y + btn_h
@@ -1733,6 +1751,136 @@ local function DrawModernLoader()
         render.draw_text(f_sub, status_text, start_draw_x + 15, btn_y + (btn_h/2) - (th/2), 200, 200, 200, a, 0,0,0,0,0)
     end
 end
+
+local function to_argb(r, g, b, a)
+    local clamp = function(x) return math.max(0, math.min(1, x)) end
+    r = math.floor(clamp(r) * 255)
+    g = math.floor(clamp(g) * 255)
+    b = math.floor(clamp(b) * 255)
+    a = math.floor(clamp(a) * 255)
+
+    return (a << 24) | (b << 16) | (g << 8) | r
+end
+
+
+
+
+
+local offsets = {
+    dwViewMatrix = 0x1E323D0,
+    dwLocalPlayerPawn = 0x1BEEF28,
+    dwLocalPlayerController = 0x1E1DC18,
+    dwEntityList = 0x1D13CE8,
+    dwGlobalVars = 0x1BE41C0,
+    dwViewAngles = 0x1E3C800,
+    m_hPlayerPawn = 0x8FC,
+    m_bDormant = 0x10B,
+    m_angEyeAngles = 0x3DF0,
+    m_iHealth = 0x34C,
+    m_lifeState = 0x354,
+    m_Glow = 0xCB0,
+    m_glowColorOverride = 0x40,
+    m_bGlowing = 0x51,
+    m_iGlowType = 0x30,
+    m_iTeamNum = 0x3EB,
+    m_ArmorValue = 0x274C,
+    m_vOldOrigin = 0x15A0,
+    m_pGameSceneNode = 0x330,
+    m_modelState = 0x190,
+    m_boneArray = 0x80,
+    m_nodeToWorld = 0x10,
+    m_sSanitizedPlayerName = 0x850,
+    m_hPawn = 0x6B4,
+    m_hObserverPawn = 0x900,
+    m_pObserverServices = 0x1408,
+    m_hObserverTarget = 0x44,
+    m_bBeingDefused = 0x119C,
+    m_bBombDefused = 0x11B4,
+    m_flFlashDuration = 0x1610,
+    m_vecAbsOrigin = 0xD0,  
+    m_hOwnerEntity = 0x520,      -- C_BaseEntity
+    m_pCameraServices = 0x1428,  
+    m_hPostProcessing = 0x1F4,   -- NOT UPDATED OFFSET  
+    m_flMinExposure = 0x1014,        
+    m_flMaxExposure = 0x1018,
+    m_pInGameMoneyServices = 0x7F8,
+    m_iAccount = 0x40,
+    m_pEntity = 0x10,
+    m_designerName = 0x20,
+    -- C_SmokeGrenadeProjectile offset
+    vSmokeColor = 0x1474,
+    m_iIDEntIndex = 0x3ECC,
+    m_vecVelocity = 0x430,
+    m_pClippingWeapon = 0x3DE0,
+    m_bIsScoped = 0x2718,
+     m_iszPlayerName = 0x6E8,
+    m_AttributeManager = 0x1390,
+    m_Item = 0x50,
+    m_iItemDefinitionIndex = 0x1BA,
+    m_entitySpottedState = 0x2700, 
+    m_bSpotted = 0x8,
+     m_vecViewOffset = 0xD80,
+     m_boneArray_aim = 0x80,
+     m_bSpottedByMask = 0xC,
+     v_angle = 0x14A8,
+    dwCSGOInput = 0x1E3C150, 
+    dwForceJump = 0x1BD54A0, 
+    m_bCameraInThirdPerson = 0x251, 
+    m_iShotsFired = 0x272C,      -- C_CSPlayerPawn
+    m_aimPunchAngle = 0x16E4,    -- C_CSPlayerPawn
+    m_aimPunchCache = 0x1708,     -- C_CSPlayerPawn
+    m_fFlags = 0x3F8,         -- C_BaseEntity::m_fFlags
+    m_hpawn = 0x6B4,
+    m_pObserverServices = 0x1408,
+    m_hObserverTarget = 0x44,
+    m_pWeaponServices = 0x13F0,
+    m_hActiveWeapon = 0x58,
+    -----Bomb Shits -----
+    dwPlantedC4 = 0x1E36BE8,
+    m_nBombSite = 0x1164,
+    m_flC4Blow = 0x1190,
+    m_flTimerLength = 0x1198,
+    m_bBeingDefused = 0x119C,
+    m_flDefuseLength = 0x11AC,
+    m_flDefuseCountDown = 0x11B0,
+    m_bBombDefused = 0x11B4,
+    m_bBombPlanted = 0x9A9,
+    m_pGameRules = 0x5F8,
+    m_bBombTicking = 0x1160,
+     m_nTickBase = 0x6B0,
+
+   
+
+
+}
+
+local g = {
+    font = render.create_font("Verdana", 12, 700),
+    small_font = render.create_font("Verdana", 11, 400)
+}
+
+local esp_fonts = {
+    font = render.create_font("Verdana", 12, 700),
+    small_font = render.create_font("Verdana", 11, 400),
+     name = render.create_font("Verdana", 12, 700),
+    weapon = render.create_font("Verdana", 11, 400)
+}
+
+local BONE_MAP = {
+    head = 6, neck_0 = 5, neck = 5, spine = 4, spine_1 = 4, spine_2 = 2, pelvis = 0,
+    arm_upper_L = 8, arm_lower_L = 9, hand_L = 10,
+    arm_upper_R = 13, arm_lower_R = 14, hand_R = 15,
+    leg_upper_L = 22, leg_lower_L = 23, ankle_L = 24,
+    leg_upper_R = 25, leg_lower_R = 26, ankle_R = 27
+}
+
+local BONE_MAP_aim = {
+    head = 6, neck = 5, spine = 4, pelvis = 0,
+    left_shoulder = 8, left_elbow = 9, left_hand = 10,
+    right_shoulder = 13, right_elbow = 14, right_hand = 15,
+    left_hip = 22, left_knee = 23, left_ankle = 24,
+    right_hip = 25, right_knee = 26, right_ankle = 27
+}
 
 engine.register_on_engine_tick(function(tick_id)
 
@@ -1786,7 +1934,7 @@ function InitializeFeatures()
         single = 3
     }
 
-local MenuLib = { version = "4.0" }
+local MenuLib = { version = "4.0", current_config = "Default" }
 
 local function round(n, p)
     p = 10^(p or 0)
@@ -1898,20 +2046,23 @@ local themes = {
 function MenuLib.initialize(config)
     config = config or {}
     local sw, sh = render.get_viewport_size()
+
+    Menu.window.w = S(780)
+    Menu.window.h = S(750)
     Menu.window.x, Menu.window.y = sw / 2 - Menu.window.w / 2, sh / 2 - Menu.window.h / 2
     Menu.active_tab = config.default_tab or ""
     
-    Menu.fonts.main = render.create_font("Verdana", 12, 500)
-    Menu.fonts.keybind = render.create_font("Verdana", 11, 500)
-    Menu.fonts.tab = render.create_font("Verdana", 14, 500)
-    Menu.fonts.group = render.create_font("Verdana", 12, 700)
-    Menu.fonts.title = render.create_font("Verdana", 22,400)
+    Menu.fonts.main = render.create_font("Verdana", S(12), 500)
+    Menu.fonts.keybind = render.create_font("Verdana", S(11), 500)
+    Menu.fonts.tab = render.create_font("Verdana", S(14), 500)
+    Menu.fonts.group = render.create_font("Verdana", S(12), 700)
+    Menu.fonts.title = render.create_font("Verdana", S(22), 400)
 
-    themes.default.fonts.title = render.create_font("Verdana", 22, 400)
-    themes.halloween.fonts.title = render.create_font("Verdana", 22, 400)
-    themes.cyberpunk.fonts.title = render.create_font("Verdana", 22, 400)
-    themes.ocean.fonts.title = render.create_font("Verdana", 22, 400)
-    themes.vampire.fonts.title = render.create_font("Verdana", 22, 400)
+    themes.default.fonts.title = render.create_font("Verdana", S(22), 400)
+    themes.halloween.fonts.title = render.create_font("Verdana", S(22), 400)
+    themes.cyberpunk.fonts.title = render.create_font("Verdana", S(22), 400)
+    themes.ocean.fonts.title = render.create_font("Verdana", S(22), 400)
+    themes.vampire.fonts.title = render.create_font("Verdana", S(22), 400)
     
     for name, theme in pairs(themes) do
         if not theme.fonts.title then
@@ -1921,11 +2072,9 @@ function MenuLib.initialize(config)
 
     MenuLib.set_theme(Menu.current_theme)
     
-    
     engine.register_on_engine_tick(MenuLib.render_all)
     Menu.initialized = true
 end
-
 
 local function update_theme_animation()
     local anim = Menu.theme_anim
@@ -1980,9 +2129,20 @@ function MenuLib.add_tab(id, name)
     end
 end
 
+Menu.group_counter = 0 
+
+
 function MenuLib.add_group(parent_id, name, column)
+    Menu.group_counter = (Menu.group_counter or 0) + 1
     local id = parent_id .. "_" .. name
-    Menu.groups[id] = {id = id, name = name, tab = parent_id, col = column or 1, elements = {}}
+    Menu.groups[id] = {
+        id = id, 
+        name = name, 
+        tab = parent_id, 
+        col = column or 1, 
+        elements = {}, 
+        index = Menu.group_counter 
+    }
     return id
 end
 
@@ -2074,6 +2234,13 @@ function MenuLib.render_all()
     for _, picker in pairs(Menu.color_pickers) do
         MenuLib.render_single_color_picker(picker)
     end
+
+    if Menu.visible and Menu.active_tab == "visuals" then
+        if Menu.active_sub_tab == "vis_enemy" or Menu.active_sub_tab == "vis_team" then
+            draw_esp_placeholder()
+        end
+    end
+
     MenuLib.render_keybind_mode_selector()
       if MenuLib.Notify then 
         MenuLib.Notify.render()
@@ -2134,39 +2301,56 @@ function MenuLib.render_menu()
         return
     end
 
-    local w, a, s, mx, my = Menu.window, math.floor(255 * Menu.anim.alpha), 20 * (1 - Menu.anim.alpha), input.get_mouse_position()
+    -- [FIX] Increased Width to S(760) for more breathing room
+    Menu.window.w = S(760)
+    Menu.window.h = S(750)
+
+    local w, a, s, mx, my = Menu.window, math.floor(255 * Menu.anim.alpha), S(20) * (1 - Menu.anim.alpha), input.get_mouse_position()
     local c = Menu.colors
 
-    if not w.dragging and input.is_key_pressed(1) and mx > w.x and mx < w.x + 120 and my > w.y and my < w.y + 50 and not Menu.click_consumed then
+    -- Dragging Logic
+    if not w.dragging and input.is_key_pressed(1) and mx > w.x and mx < w.x + S(120) and my > w.y and my < w.y + S(50) and not Menu.click_consumed then
         w.dragging, w.drag_x, w.drag_y = true, mx - w.x, my - w.y; Menu.click_consumed = true
     end
     if not input.is_key_down(1) then w.dragging = false end
     if w.dragging then w.x, w.y = mx - w.drag_x, my - w.drag_y end
 
+    -- [FIX] Sidebar width reduced to S(150) to give content more space
+    local sidebar_w = S(150) 
+    
+    -- Backgrounds
     render.draw_rectangle(w.x + 4, w.y + 4, w.w, w.h, 0, 0, 0, 80 * (a / 255), 0, true, 6)
     render.draw_rectangle(w.x, w.y, w.w, w.h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 6)
-    render.draw_rectangle(w.x + 120, w.y, w.w - 120, w.h, c.bg_mid[1], c.bg_mid[2], c.bg_mid[3], a, 0, true, 6)
-    render.draw_text(Menu.fonts.title, "Shook", w.x + 20, w.y + 15 - s, 255, 255, 255, a, 1, 0, 0, 0, a * 0.7)
+    render.draw_rectangle(w.x + sidebar_w, w.y, w.w - sidebar_w, w.h, c.bg_mid[1], c.bg_mid[2], c.bg_mid[3], a, 0, true, 6)
+    render.draw_text(Menu.fonts.title, "Shook", w.x + S(20), w.y + S(15) - s, 255, 255, 255, a, 1, 0, 0, 0, a * 0.7)
 
-    local initial_tab_y = w.y + 60 - s
+    -- Tabs
+    local tab_h = S(40)
+    local initial_tab_y = w.y + S(60) - s
     local target_y = initial_tab_y
     if Menu.active_tab == "" and #Menu.tabs > 0 then Menu.active_tab = Menu.tabs[1].id end
     
     local active_main_tab = nil
     for i, tab in ipairs(Menu.tabs) do
-        if tab.id == Menu.active_tab then target_y = initial_tab_y + (i - 1) * 40; active_main_tab = tab; end
+        if tab.id == Menu.active_tab then target_y = initial_tab_y + (i - 1) * tab_h; active_main_tab = tab; end
     end
     
     Menu.tab_anim_y = math.lerp(Menu.tab_anim_y or target_y, target_y, 0.1)
-    render.draw_rectangle(w.x, Menu.tab_anim_y - 2, 3, 30, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2)
+    render.draw_rectangle(w.x, Menu.tab_anim_y - 2, 3, S(30), c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2)
     
+    local tab_w = S(120) -- Reduced tab button width to match sidebar
     for i, tab in ipairs(Menu.tabs) do
-        local cur_y = initial_tab_y + (i-1) * 40; local hov=mx>w.x+10 and mx<w.x+110 and my>cur_y and my<cur_y+30; local act = Menu.active_tab == tab.id;
+        local cur_y = initial_tab_y + (i-1) * tab_h; 
+        local hov = mx>w.x+10 and mx<w.x+10+tab_w and my>cur_y and my<cur_y+S(30)
+        local act = Menu.active_tab == tab.id;
+        
         tab.anim = math.lerp(tab.anim or 0, act and 1 or 0, 0.15);
-        if tab.anim > 0.01 then render.draw_rectangle(w.x+5, cur_y-2, 110, 30, c.accent[1], c.accent[2], c.accent[3], math.floor(tab.anim*80*(a/255)),0,true,4) end
-        if hov and not act then render.draw_rectangle(w.x+5, cur_y-2, 110, 30, 255, 255, 255, math.floor(50*(a/255)), 0, true, 4) end
+        if tab.anim > 0.01 then render.draw_rectangle(w.x+5, cur_y-2, tab_w, S(30), c.accent[1], c.accent[2], c.accent[3], math.floor(tab.anim*80*(a/255)),0,true,4) end
+        if hov and not act then render.draw_rectangle(w.x+5, cur_y-2, tab_w, S(30), 255, 255, 255, math.floor(50*(a/255)), 0, true, 4) end
+        
         local tc = act and c.text_main or c.text_dim;
-        render.draw_text(Menu.fonts.tab, tab.name, w.x+25, cur_y+5, tc[1], tc[2], tc[3], a, 0, 0, 0, 0, 0)
+        render.draw_text(Menu.fonts.tab, tab.name, w.x+S(25), cur_y+S(5), tc[1], tc[2], tc[3], a, 0, 0, 0, 0, 0)
+        
         if hov and input.is_key_pressed(1) and not Menu.click_consumed then
             Menu.active_tab = tab.id
             if tab.sub_tabs and #tab.sub_tabs > 0 then Menu.active_sub_tab = tab.sub_tabs[1].id else Menu.active_sub_tab = nil end
@@ -2174,8 +2358,9 @@ function MenuLib.render_menu()
         end
     end
 
+    -- Sub Tabs (Top Bar)
     if active_main_tab and active_main_tab.sub_tabs then
-        local sub_tab_bar_y, current_x = w.y + 20, w.x + 140
+        local sub_tab_bar_y, current_x = w.y + S(20), w.x + sidebar_w + S(30)
         for _, sub_tab in ipairs(active_main_tab.sub_tabs) do
             local text_w, text_h = render.measure_text(Menu.fonts.main, sub_tab.name)
             local is_active = Menu.active_sub_tab == sub_tab.id
@@ -2191,55 +2376,81 @@ function MenuLib.render_menu()
                 Menu.active_sub_tab = sub_tab.id
                 Menu.click_consumed = true
             end
-            current_x = current_x + text_w + 20
+            current_x = current_x + text_w + S(20) -- Reduced spacing slightly
         end
     end
 
+    -- [FIX] Layout Logic: Wider columns
+    local content_start_y = w.y + (active_main_tab and active_main_tab.sub_tabs and S(60) or S(30)) - s
     
-    local content_start_y = w.y + (active_main_tab and active_main_tab.sub_tabs and 60 or 30) - s
-    local x1, x2 = w.x + 140, w.x + 375
+    local elem_width = S(240) -- Increased element width
+    local col_gap = S(40)
+    
+    -- Col 1 Position
+    local x1 = w.x + sidebar_w + S(30) 
+    -- Col 2 Position
+    local x2 = x1 + elem_width + col_gap
+    
     local current_y1, current_y2 = content_start_y, content_start_y
-    local ELEMENT_PADDING = 5
+    local ELEMENT_PADDING = S(5)
 
     for _, group in pairs(Menu.groups) do
         local should_draw = false
         if active_main_tab and active_main_tab.sub_tabs then
-            if group.tab == Menu.active_sub_tab then
-                should_draw = true
-            end
+            if group.tab == Menu.active_sub_tab then should_draw = true end
         else
-            if group.tab == Menu.active_tab then
-                should_draw = true
-            end
+            if group.tab == Menu.active_tab then should_draw = true end
         end
         
         if should_draw then
             local x, y
-            if group.col == 1 then
-                x, y = x1, current_y1 
-            else 
-                x, y = x2, current_y2
-            end
+            if group.col == 1 then x, y = x1, current_y1 else x, y = x2, current_y2 end
 
             render.draw_text(Menu.fonts.group, group.name, x, y, c.text_dim[1],c.text_dim[2],c.text_dim[3],a,0,0,0,0,0)
-            local local_y_cursor = y + 25
+            local local_y_cursor = y + S(25)
                   
             for _, el in ipairs(group.elements) do
                 if el.is_active then
+
                     el.draw(el, a, x, local_y_cursor, mx, my, render_after_queue) 
                     local_y_cursor = local_y_cursor + el.h + ELEMENT_PADDING
                 end
             end
             
-            if group.col == 1 then
-                current_y1 = local_y_cursor + 20 
-            else 
-                current_y2 = local_y_cursor + 20
-            end
+            if group.col == 1 then current_y1 = local_y_cursor + S(20) else current_y2 = local_y_cursor + S(20) end
         end
     end
     
-    local btn_x,btn_y=w.x+20,w.y+w.h-30;local btn_text="[?] Info";local btn_w_est=50;local hov=mx>btn_x and mx<btn_x+btn_w_est and my>btn_y-2 and my<btn_y+12;local tc=hov and c.text_main or c.text_dim;render.draw_text(Menu.fonts.main,btn_text,btn_x,btn_y,tc[1],tc[2],tc[3],a,0,0,0,0,0);if hov and input.is_key_pressed(1)then Menu.info_window.visible=not Menu.info_window.visible;if Menu.info_window.visible then local sw,sh=render.get_viewport_size();Menu.info_window.x=sw/2-Menu.info_window.w/2;Menu.info_window.y=sh/2-Menu.info_window.h/2 end;Menu.click_consumed=true end;MenuLib.render_info_window();if input.is_key_pressed(1)and not Menu.click_consumed then if Menu.active_select_element then local el=Menu.elements[Menu.active_select_element];if el then el.is_open=false end;Menu.active_select_element=nil end;if Menu.keybind_mode_selector.visible then local sel=Menu.keybind_mode_selector;if not(mx>sel.x and mx<sel.x+sel.w and my>sel.y and my<sel.y+sel.h)then sel.visible=false end end end
+    -- Info Button
+    local btn_x,btn_y = w.x+S(20), w.y+w.h-S(30)
+    local btn_text="[?] Info"
+    local btn_w_est=S(50)
+    local hov=mx>btn_x and mx<btn_x+btn_w_est and my>btn_y-2 and my<btn_y+12
+    local tc=hov and c.text_main or c.text_dim
+    render.draw_text(Menu.fonts.main,btn_text,btn_x,btn_y,tc[1],tc[2],tc[3],a,0,0,0,0,0)
+    
+    if hov and input.is_key_pressed(1) then 
+        Menu.info_window.visible = not Menu.info_window.visible
+        if Menu.info_window.visible then 
+            local sw,sh=render.get_viewport_size()
+            Menu.info_window.x=sw/2-Menu.info_window.w/2
+            Menu.info_window.y=sh/2-Menu.info_window.h/2 
+        end
+        Menu.click_consumed=true 
+    end
+    
+    MenuLib.render_info_window()
+    if input.is_key_pressed(1) and not Menu.click_consumed then 
+        if Menu.active_select_element then 
+            local el=Menu.elements[Menu.active_select_element]
+            if el then el.is_open=false end
+            Menu.active_select_element=nil 
+        end
+        if Menu.keybind_mode_selector.visible then 
+            local sel=Menu.keybind_mode_selector
+            if not(mx>sel.x and mx<sel.x+sel.w and my>sel.y and my<sel.y+sel.h)then sel.visible=false end 
+        end 
+    end
     for _,f in ipairs(render_after_queue)do f()end
 end
 
@@ -2272,12 +2483,16 @@ local function can_interact(element_id)
     
     return true
 end
-
 function MenuLib.draw_checkbox(opt, a, x, y, mx, my, r_queue)
-    opt.h = 20
+    opt.h = S(20)
+    local box_size = S(30)
+    local box_h = S(16)
+    local knob = S(6)
+    local offset_x = S(195)
+    
     local v = Menu.values[opt.id]
     local c = Menu.colors
-    local is_hovered = mx > x + 195 and mx < x + 225 and my > y - 2 and my < y + 18
+    local is_hovered = mx > x + offset_x and mx < x + offset_x + box_size and my > y - 2 and my < y + box_h + 2
     
     if is_hovered and input.is_key_pressed(1) and can_interact(opt.id) then
         Menu.values[opt.id] = not v
@@ -2286,25 +2501,28 @@ function MenuLib.draw_checkbox(opt, a, x, y, mx, my, r_queue)
     
     opt.anim = math.lerp(opt.anim or (v and 1 or 0), v and 1 or 0, 0.2)
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
-    render.draw_rectangle(x + 195, y, 30, 16, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 8)
+    
+    render.draw_rectangle(x + offset_x, y, box_size, box_h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, box_h/2)
+    
     if opt.anim > 0.01 then
         local bgr, bgg, bgb = math.lerp(c.bg_dark[1], c.accent[1], opt.anim), math.lerp(c.bg_dark[2], c.accent[2], opt.anim), math.lerp(c.bg_dark[3], c.accent[3], opt.anim)
-        render.draw_rectangle(x + 195, y, 30, 16, bgr, bgg, bgb, a, 0, true, 8)
-        render.draw_circle(x + 195 + 8 + (14 * opt.anim), y + 8, 6, 255, 255, 255, a, 0, true)
+        render.draw_rectangle(x + offset_x, y, box_size, box_h, bgr, bgg, bgb, a, 0, true, box_h/2)
+        render.draw_circle(x + offset_x + S(8) + (S(14) * opt.anim), y + S(8), knob, 255, 255, 255, a, 0, true)
     else
-        render.draw_circle(x + 195 + 8, y + 8, 6, 100, 100, 100, a, 0, true)
+        render.draw_circle(x + offset_x + S(8), y + S(8), knob, 100, 100, 100, a, 0, true)
     end
 end
 
 function MenuLib.draw_slider(opt, a, x, y, mx, my, r_queue)
-    opt.h = 35
-    local w = 220
+    opt.h = S(35)
+    local w = S(220)
+    local bar_y_off = S(20)
+    local bar_h = S(4)
     local c = Menu.colors
-    local hov = mx > x and mx < x + w and my > y + 18 and my < y + 32
+    local hov = mx > x and mx < x + w and my > y + S(18) and my < y + S(32)
     
     if hov and input.is_key_pressed(1) and can_interact(opt.id) then
-        opt.is_dragging = true
-        Menu.click_consumed = true
+        opt.is_dragging = true; Menu.click_consumed = true
     end
     if not input.is_key_down(1) then opt.is_dragging = false end
     
@@ -2319,21 +2537,22 @@ function MenuLib.draw_slider(opt, a, x, y, mx, my, r_queue)
     opt.anim_ratio = math.lerp(opt.anim_ratio or r, r, 0.15)
     
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
-    render.draw_text(Menu.fonts.main, vs, x + w - 35, y, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
-    render.draw_rectangle(x, y + 20, w, 4, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 2)
-    if opt.anim_ratio > 0.001 then render.draw_rectangle(x, y + 20, w * opt.anim_ratio, 4, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2) end
-    render.draw_circle(x + w * opt.anim_ratio, y + 22, 5, 255, 255, 255, a, 0, true)
+    render.draw_text(Menu.fonts.main, vs, x + w - S(35), y, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
+    render.draw_rectangle(x, y + bar_y_off, w, bar_h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 2)
+    if opt.anim_ratio > 0.001 then render.draw_rectangle(x, y + bar_y_off, w * opt.anim_ratio, bar_h, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2) end
+    render.draw_circle(x + w * opt.anim_ratio, y + bar_y_off + 2, S(5), 255, 255, 255, a, 0, true)
 end
 
 function MenuLib.draw_slider_float(opt, a, x, y, mx, my, r_queue)
-    opt.h = 35
-    local w = 220
+    opt.h = S(35)
+    local w = S(220)
+    local bar_y_off = S(20)
+    local bar_h = S(4)
     local c = Menu.colors
-    local hov = mx > x and mx < x + w and my > y + 18 and my < y + 32
+    local hov = mx > x and mx < x + w and my > y + S(18) and my < y + S(32)
     
     if hov and input.is_key_pressed(1) and can_interact(opt.id) then
-        opt.is_dragging = true
-        Menu.click_consumed = true
+        opt.is_dragging = true; Menu.click_consumed = true
     end
     if not input.is_key_down(1) then opt.is_dragging = false end
     
@@ -2349,37 +2568,27 @@ function MenuLib.draw_slider_float(opt, a, x, y, mx, my, r_queue)
     opt.anim_ratio = math.lerp(opt.anim_ratio or r, r, 0.15)
     
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
-    render.draw_text(Menu.fonts.main, vs, x + w - 40, y, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
-    render.draw_rectangle(x, y + 20, w, 4, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 2)
-    if opt.anim_ratio > 0.001 then render.draw_rectangle(x, y + 20, w * opt.anim_ratio, 4, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2) end
-    render.draw_circle(x + w * opt.anim_ratio, y + 22, 5, 255, 255, 255, a, 0, true)
+    render.draw_text(Menu.fonts.main, vs, x + w - S(40), y, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
+    render.draw_rectangle(x, y + bar_y_off, w, bar_h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 2)
+    if opt.anim_ratio > 0.001 then render.draw_rectangle(x, y + bar_y_off, w * opt.anim_ratio, bar_h, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 2) end
+    render.draw_circle(x + w * opt.anim_ratio, y + bar_y_off + 2, S(5), 255, 255, 255, a, 0, true)
 end
 
 function MenuLib.draw_label(opt, a, x, y, mx, my, r_queue)
-    opt.h = 20
+    opt.h = S(20)
     local c = Menu.colors
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0) end
 end
 
-local input_timers = { backspace = 0 }
-
 function MenuLib.draw_input_text(opt, a, x, y, mx, my, r_queue)
-    opt.h = 35
-    local w, h = 220, 20
+    opt.h = S(35)
+    local w, h = S(220), S(20)
+    local c = Menu.colors or { bg_dark={20,20,20}, bg_light={50,50,50}, text_main={255,255,255}, text_dim={150,150,150}, accent={100,100,255} }
     
-    local c = Menu.colors or { 
-        bg_dark={20,20,20}, bg_light={50,50,50}, 
-        text_main={255,255,255}, text_dim={150,150,150}, accent={100,100,255} 
-    }
-    
-    local hov = mx > x and mx < x + w and my > y + 15 and my < y + 15 + h
+    local hov = mx > x and mx < x + w and my > y + S(15) and my < y + S(15) + h
     if input.is_key_pressed(1) and can_interact(opt.id) then
-        if hov then
-            Menu.active_input_element = opt.id
-            Menu.click_consumed = true
-        elseif Menu.active_input_element == opt.id then
-            Menu.active_input_element = nil
-        end
+        if hov then Menu.active_input_element = opt.id; Menu.click_consumed = true
+        elseif Menu.active_input_element == opt.id then Menu.active_input_element = nil end
     end
     
     if Menu.values[opt.id] == nil then Menu.values[opt.id] = "" end
@@ -2387,177 +2596,96 @@ function MenuLib.draw_input_text(opt, a, x, y, mx, my, r_queue)
     local now = winapi.get_tickcount64()
 
     if Menu.active_input_element == opt.id then
-        
-        if input.is_key_pressed(0x0D) or input.is_key_pressed(0x1B) then
-            Menu.active_input_element = nil
-        end
-
-
+        if input.is_key_pressed(0x0D) or input.is_key_pressed(0x1B) then Menu.active_input_element = nil end
         local backspace_down = input.is_key_down(0x08)
         if backspace_down then
-            if input.is_key_pressed(0x08) then
-
-                if #current_text > 0 then
-                    current_text = current_text:sub(1, -2)
-                    input_timers.backspace = now + 400 
-                end
-            elseif now > input_timers.backspace then
-  
-                if #current_text > 0 then
-                    current_text = current_text:sub(1, -2)
-                    input_timers.backspace = now + 50 
-                end
-            end
+            if input.is_key_pressed(0x08) then if #current_text > 0 then current_text = current_text:sub(1, -2); input_timers.backspace = now + 400 end
+            elseif now > input_timers.backspace then if #current_text > 0 then current_text = current_text:sub(1, -2); input_timers.backspace = now + 50 end end
         end
-
         if _G.get_recent_key_input then
             local typed = _G.get_recent_key_input()
-            if typed and typed ~= "" then
-
-                local safe = typed:gsub("[^%w%s%-%_%.,!@#$%%]", "") 
-                current_text = current_text .. safe
-            end
+            if typed and typed ~= "" then local safe = typed:gsub("[^%w%s%-%_%.,!@#$%%]", ""); current_text = current_text .. safe end
         else
-            if VK_TO_CHAR then
-                local shift = input.is_key_down(0x10)
-                if input.is_key_pressed(0x20) then current_text = current_text .. " " end
-                
-                for vk, chars in pairs(VK_TO_CHAR) do
-                    if vk ~= 0x20 and input.is_key_pressed(vk) then
-                        local char = shift and chars.shifted or chars.normal
-                        current_text = current_text .. char
-                    end
-                end
-            end
         end
-        
         Menu.values[opt.id] = current_text
     end
     
     local is_active = Menu.active_input_element == opt.id
     local display_text = current_text
-
-    if is_active then
-        if (now % 1000) < 500 then
-            display_text = display_text .. "|"
-        end
-    end
-
-    local max_chars = 26
-    if #display_text > max_chars then
-        display_text = "..." .. string.sub(display_text, -max_chars)
-    end
-
-    if opt.name and opt.name ~= "" then 
-        render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0,0,0,0,0) 
-    end
+    if is_active and (now % 1000) < 500 then display_text = display_text .. "|" end
     
+    if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0,0,0,0,0) end
     local br = is_active and c.accent[1] or c.bg_light[1]
     local bg = is_active and c.accent[2] or c.bg_light[2]
     local bb = is_active and c.accent[3] or c.bg_light[3]
-    local bg_r, bg_g, bg_b = c.bg_dark[1], c.bg_dark[2], c.bg_dark[3]
-
-    render.draw_rectangle(x, y + 15, w, h, bg_r, bg_g, bg_b, a, 0, true, 4)
-    
-    render.draw_rectangle(x - 1, y + 14, w + 2, h + 2, br, bg, bb, a, 1, false, 4)
-    
-    if display_text ~= "" then 
-        render.draw_text(Menu.fonts.main, display_text, x + 6, y + 19, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0,0,0,0,0) 
-    end
+    render.draw_rectangle(x, y + S(15), w, h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 4)
+    render.draw_rectangle(x - 1, y + S(14), w + 2, h + 2, br, bg, bb, a, 1, false, 4)
+    if display_text ~= "" then render.draw_text(Menu.fonts.main, display_text, x + S(6), y + S(19), c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0,0,0,0,0) end
 end
+
 function MenuLib.draw_button(opt, a, x, y, mx, my, r_queue)
-    opt.h = 30
-    local w, h = 220, 25
+    opt.h = S(30)
+    local w, h = S(220), S(25)
     local c = Menu.colors
     local hov = mx > x and mx < x + w and my > y and my < y + h
-    
-    if hov and input.is_key_pressed(1) and can_interact(opt.id) then
-        opt.callback()
-        Menu.click_consumed = true
-    end
-    
+    if hov and input.is_key_pressed(1) and can_interact(opt.id) then opt.callback(); Menu.click_consumed = true end
     local bg = hov and c.accent or c.bg_light
     render.draw_rectangle(x, y, w, h, bg[1], bg[2], bg[3], a, 0, true, 4)
-    if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x + 10, y + 5, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
+    if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x + S(10), y + S(5), c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
 end
 
 function MenuLib.draw_keybind(opt, a, x, y, mx, my, r_queue)
-    opt.h = 20
-    local w, h = 100, 20
-    local kx = x + 120
+    opt.h = S(20)
+    local w, h = S(100), S(20)
+    local kx = x + S(120)
     local c = Menu.colors
     local hov = mx > kx and mx < kx + w and my > y and my < y + h
 
     if can_interact(opt.id) then
         if hov and input.is_key_pressed(1) then 
-            if Menu.active_binding_element == opt.id then
-                Menu.active_binding_element = nil 
-            else
-                Menu.active_binding_element = opt.id 
-                Menu.keybind_mode_selector.visible = false
-            end
-            Menu.click_consumed = true
+            if Menu.active_binding_element ~= opt.id then Menu.active_binding_element = opt.id; Menu.keybind_mode_selector.visible = false; Menu.click_consumed = true end
         end
         if hov and input.is_key_pressed(2) then 
-            local selector = Menu.keybind_mode_selector
-            if selector.visible and selector.element_id == opt.id then
-                selector.visible = false
-            else
-                selector.visible = true; selector.element_id = opt.id
-                selector.x, selector.y = mx + 5, my
-                Menu.active_binding_element = nil
+            if Menu.active_binding_element ~= opt.id then
+                local selector = Menu.keybind_mode_selector
+                if selector.visible and selector.element_id == opt.id then selector.visible = false
+                else selector.visible = true; selector.element_id = opt.id; selector.x, selector.y = mx + 5, my; Menu.active_binding_element = nil end
+                Menu.click_consumed = true
             end
-            Menu.click_consumed = true
         end
     end
 
     local keybind_data = Menu.values[opt.id]
-    if Menu.active_binding_element == opt.id then
+    if Menu.active_binding_element == opt.id and not Menu.click_consumed then
         for i = 1, 255 do
-            if i ~= 1 and input.is_key_pressed(i) then 
-                keybind_data.key = (i == 0x1B) and 0 or i
-                Menu.active_binding_element = nil
-                Menu.click_consumed = true
-                break
+            if input.is_key_pressed(i) then 
+                keybind_data.key = (i == 0x1B) and 0 or i 
+                Menu.active_binding_element = nil; Menu.click_consumed = true; break
             end
         end
     end
 
-    -- 3. Draw
     local mode_char = Menu.keybind_mode_selector.items[keybind_data.mode] and Menu.keybind_mode_selector.items[keybind_data.mode]:sub(1, 1) or "H"
     local key_name = (keybind_data.key == 0) and "None" or get_key_name(keybind_data.key)
     local key_text = (Menu.active_binding_element == opt.id) and "[...]" or string.format("[%s] %s", mode_char, key_name)
 
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y + 1, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
-    
     local box_col = (hov or Menu.active_binding_element == opt.id) and c.bg_light or c.bg_dark
     render.draw_rectangle(kx, y, w, h, box_col[1], box_col[2], box_col[3], a, 0, true, 4)
-    
-    if Menu.active_binding_element == opt.id then
-        render.draw_rectangle(kx, y, w, h, c.accent[1], c.accent[2], c.accent[3], a, 1, false, 4)
-    end
-    render.draw_text(Menu.fonts.keybind, key_text, kx + 5, y + 2, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
+    if Menu.active_binding_element == opt.id then render.draw_rectangle(kx, y, w, h, c.accent[1], c.accent[2], c.accent[3], a, 1, false, 4) end
+    render.draw_text(Menu.fonts.keybind, key_text, kx + S(5), y + S(2), c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
 end
 
 function MenuLib.draw_singleselect(opt, a, x, y, mx, my, r_queue)
-    opt.h = 35
-    local w, h = 220, 20
+    opt.h = S(35)
+    local w, h = S(220), S(20)
     local c = Menu.colors
-    local main_box_y = y + 15
+    local main_box_y = y + S(15)
     local hov = mx > x and mx < x + w and my > main_box_y and my < main_box_y + h
     
     if can_interact(opt.id) and hov and input.is_key_pressed(1) then
-        if opt.is_open then
-            opt.is_open = false
-            Menu.active_select_element = nil
-        else
-            if Menu.active_select_element and Menu.elements[Menu.active_select_element] then 
-                Menu.elements[Menu.active_select_element].is_open = false 
-            end
-            
-            opt.is_open = true
-            Menu.active_select_element = opt.id
-        end
+        if opt.is_open then opt.is_open = false; Menu.active_select_element = nil
+        else if Menu.active_select_element and Menu.elements[Menu.active_select_element] then Menu.elements[Menu.active_select_element].is_open = false end; opt.is_open = true; Menu.active_select_element = opt.id end
         Menu.click_consumed = true
     end
     
@@ -2569,7 +2697,7 @@ function MenuLib.draw_singleselect(opt, a, x, y, mx, my, r_queue)
     render.draw_rectangle(x - 1, main_box_y - 1, w + 2, h + 2, border_color[1], border_color[2], border_color[3], a, 1, false, 4)
     render.draw_rectangle(x, main_box_y, w, h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 4)
     if selected_text and selected_text ~= "" then render.draw_text(Menu.fonts.main, selected_text, x + 5, main_box_y + 2, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0) end
-    local arrow_x, arrow_y = x + w - 12, main_box_y + 8
+    local arrow_x, arrow_y = x + w - S(12), main_box_y + S(8)
     render.draw_triangle(arrow_x, arrow_y, arrow_x + 6, arrow_y, arrow_x + 3, arrow_y + 3, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 1, true)
     
     if opt.is_open then
@@ -2579,57 +2707,37 @@ function MenuLib.draw_singleselect(opt, a, x, y, mx, my, r_queue)
             for i, item in ipairs(opt.items) do
                 local item_y = list_y + (i - 1) * h
                 local item_hov = mx > x and mx < x + w and my > item_y and my < item_y + h
-                
                 if item_hov then render.draw_rectangle(x + 2, item_y, w - 4, h, c.bg_light[1], c.bg_light[2], c.bg_light[3], a, 0, true, 4) end
                 render.draw_text(Menu.fonts.main, item, x + 5, item_y + 2, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
-                
-                if item_hov and input.is_key_pressed(1) then
-                    Menu.values[opt.id] = i
-                    opt.is_open = false
-                    Menu.active_select_element = nil
-                    Menu.click_consumed = true
-                    if opt.onChange and type(opt.onChange) == "function" then opt.onChange(i, item) end
-                end
+                if item_hov and input.is_key_pressed(1) then Menu.values[opt.id] = i; opt.is_open = false; Menu.active_select_element = nil; Menu.click_consumed = true; if opt.onChange then opt.onChange(i, item) end end
             end
         end)
     end
 end
 
 function MenuLib.draw_multiselect(opt, a, x, y, mx, my, r_queue)
-    opt.h = 35
-    local w, h = 220, 20
+    opt.h = S(35)
+    local w, h = S(220), S(20)
     local c = Menu.colors
-    local main_box_y = y + 15
+    local main_box_y = y + S(15)
     local hov = mx > x and mx < x + w and my > main_box_y and my < main_box_y + h
-    
     if can_interact(opt.id) and hov and input.is_key_pressed(1) then
-        if opt.is_open then
-            opt.is_open = false
-            Menu.active_select_element = nil
-        else
-            if Menu.active_select_element and Menu.elements[Menu.active_select_element] then Menu.elements[Menu.active_select_element].is_open = false end
-            opt.is_open = true
-            Menu.active_select_element = opt.id
-        end
+        if opt.is_open then opt.is_open = false; Menu.active_select_element = nil
+        else if Menu.active_select_element and Menu.elements[Menu.active_select_element] then Menu.elements[Menu.active_select_element].is_open = false end; opt.is_open = true; Menu.active_select_element = opt.id end
         Menu.click_consumed = true
     end
     
     local selected_items = {}
-    if Menu.values[opt.id] then
-        for i, item in ipairs(opt.items) do
-            if Menu.values[opt.id][i] then table.insert(selected_items, item) end
-        end
-    end
-    
-    local display_text = table.concat(selected_items, ", ")
-    if display_text == "" then display_text = "None" end
+    if Menu.values[opt.id] then for i, item in ipairs(opt.items) do if Menu.values[opt.id][i] then table.insert(selected_items, item) end end end
+    local display_text = table.concat(selected_items, ", "); if display_text == "" then display_text = "None" end
     if #selected_items > 3 then display_text = #selected_items .. " items selected" end
+    
     if opt.name and opt.name ~= "" then render.draw_text(Menu.fonts.main, opt.name, x, y, c.text_main[1], c.text_main[2], c.text_main[3], a, 0, 0, 0, 0, 0) end
     local border_color = opt.is_open and c.accent or c.bg_light
     render.draw_rectangle(x - 1, main_box_y - 1, w + 2, h + 2, border_color[1], border_color[2], border_color[3], a, 1, false, 4)
     render.draw_rectangle(x, main_box_y, w, h, c.bg_dark[1], c.bg_dark[2], c.bg_dark[3], a, 0, true, 4)
     if display_text and display_text ~= "" then render.draw_text(Menu.fonts.main, display_text, x + 5, main_box_y + 2, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0) end
-    local arrow_x, arrow_y = x + w - 12, main_box_y + 8
+    local arrow_x, arrow_y = x + w - S(12), main_box_y + S(8)
     render.draw_triangle(arrow_x, arrow_y, arrow_x + 6, arrow_y, arrow_x + 3, arrow_y + 3, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 1, true)
     
     if opt.is_open then
@@ -2639,14 +2747,11 @@ function MenuLib.draw_multiselect(opt, a, x, y, mx, my, r_queue)
             for i, item in ipairs(opt.items) do
                 local item_y = list_y + (i - 1) * h
                 local item_hov = mx > x and mx < x + w and my > item_y and my < item_y + h
-                
                 local is_ticked = (Menu.values[opt.id] and Menu.values[opt.id][i]) or false
-                
                 if item_hov then render.draw_rectangle(x + 2, item_y, w - 4, h, c.bg_light[1], c.bg_light[2], c.bg_light[3], a, 0, true, 4) end
                 render.draw_rectangle(x + 5, item_y + 5, 10, 10, c.bg_light[1], c.bg_light[2], c.bg_light[3], a, 1, false, 3)
                 if is_ticked then render.draw_rectangle(x + 5, item_y + 5, 10, 10, c.accent[1], c.accent[2], c.accent[3], a, 0, true, 3) end
                 render.draw_text(Menu.fonts.main, item, x + 22, item_y + 2, c.text_dim[1], c.text_dim[2], c.text_dim[3], a, 0, 0, 0, 0, 0)
-                
                 if item_hov and input.is_key_pressed(1) then
                     if not Menu.values[opt.id] then Menu.values[opt.id] = {} end
                     Menu.values[opt.id][i] = not is_ticked
@@ -2657,11 +2762,10 @@ function MenuLib.draw_multiselect(opt, a, x, y, mx, my, r_queue)
     end
 end
 
-
 function MenuLib.draw_colorpicker_button(opt, a, x, y, mx, my, render_queue)
-    opt.h = 20
-    local w, h = 30, 16
-    local swatch_x = x + 190
+    opt.h = S(20)
+    local w, h = S(30), S(16)
+    local swatch_x = x + S(190)
     local c = Menu.colors
     local hsva_val = Menu.values[opt.id]
     local r, g, b, color_alpha = MenuLib.hsv_to_rgb(hsva_val.h, hsva_val.s, hsva_val.v, hsva_val.a)
@@ -2674,9 +2778,7 @@ function MenuLib.draw_colorpicker_button(opt, a, x, y, mx, my, render_queue)
     if hov and input.is_key_pressed(1) and not Menu.click_consumed then
         local cpw = Menu.color_pickers[opt.id]
         cpw.visible = not cpw.visible
-        if cpw.visible then
-            cpw.x, cpw.y = Menu.window.x + Menu.window.w + 10, Menu.window.y
-        end
+        if cpw.visible then cpw.x, cpw.y = Menu.window.x + Menu.window.w + S(10), Menu.window.y end
         Menu.click_consumed = true
     end
 end
@@ -2984,9 +3086,10 @@ function MenuLib.save_config(name)
     for _, v in ipairs(list) do
         if v == name then exists = true; break end
     end
-    if not exists then table.insert(list, name) end
+   if not exists then table.insert(list, name) end
     fs.write_to_file(CONFIG_MANIFEST, json.stringify(list))
 
+    MenuLib.current_config = name
     MenuLib.Notify.push("Config saved: " .. name, 2)
 end
 
@@ -3060,6 +3163,7 @@ function MenuLib.load_config(name)
             end
         end
     end
+      MenuLib.current_config = name
     MenuLib.Notify.push("Config loaded successfully", 2)
 end
 
@@ -3111,7 +3215,7 @@ end
 
 
 local INDICATOR_OPTIONS = { 
-    "Rage Aimbot", "Legit Aimbot", "Anti-Aim", "Triggerbot", 
+    "Legit Aimbot",  "Triggerbot", 
     "RCS"
 }
 
@@ -3173,7 +3277,6 @@ local legit_sub_tabs = {
         { id = "vis_misc",  name = "MISC",  anim = 0 }
     }
 
-MenuLib.add_tab("rage", "Rage")
 
 table.insert(Menu.tabs, {id = "legit", name = "Legit", anim = 0, sub_tabs = legit_sub_tabs})
 Menu.active_sub_tab = "legit_rifle"
@@ -3183,8 +3286,6 @@ MenuLib.add_tab("misc", "Misc")
 MenuLib.add_tab("configs", "Configs")
 
 
-local rage_general = MenuLib.add_group("rage", "Rage Aimbot", 1)
-local rage_aa = MenuLib.add_group("rage", "Anti-Aim", 2)
 
 
 function create_weapon_settings(sub_tab_id, weapon_name)
@@ -3253,17 +3354,17 @@ end
     local vis_misc_main = MenuLib.add_group("vis_misc", "Crosshair & Indicators", 1)
     local vis_misc_view = MenuLib.add_group("vis_misc", "View", 2)
 
-    -- [[ RAGE ELEMENTS ]]
-    MenuLib.add_element(rage_general, "checkbox", "rage_enabled", "Enable Rage Aimbot")
-    MenuLib.add_element(rage_general, "keybind", "rage_key", "Rage Key", { default_key = 0x06, default_mode = 1 })
-    MenuLib.add_element(rage_general, "checkbox", "rage_show_fov", "Show FOV", { default = true })
-    MenuLib.add_element(rage_general, "slider_float", "rage_fov", "FOV", { min = 1.0, max = 500.0, default = 150.0 })
+
+    local vis_enemy_chams = MenuLib.add_group("vis_enemy", "Enemy Chams", 2)
+    local vis_team_chams = MenuLib.add_group("vis_team", "Team Chams", 2)
+    
+
 
     -- [[ ENEMY VISUALS ELEMENTS ]]
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_enabled", "Enable Enemy ESP")
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_box", "Box")
     MenuLib.add_element(vis_enemy_main, "singleselect", "esp_box_type", "Box Type", { items = { "Normal", "Corner", "Filled" }, default = 3 })
-    MenuLib.add_element(vis_enemy_main, "singleselect", "esp_skeleton_mode", "Skeleton", { items = { "Off", "Normal", "Circular", "Capsule" } })
+    MenuLib.add_element(vis_enemy_main, "singleselect", "esp_skeleton_mode", "Skeleton", { items = { "Off", "Normal", "Circular"} })
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_name", "Name")
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_money", "Money")
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_health", "Health Bar", { default = true })
@@ -3272,13 +3373,24 @@ end
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_player_weapon", "Weapon")
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_scoped_flag", "Scoped Flag")
     MenuLib.add_element(vis_enemy_main, "checkbox", "esp_flashed_flag", "Flashed Flag")
+    MenuLib.add_element(vis_enemy_main, "checkbox", "esp_c4_carrier", "Bomb Carrier Flag")
+    MenuLib.add_element(vis_enemy_main, "checkbox", "esp_oof_arrows", "Out of View Arrows")
+    MenuLib.add_element(vis_enemy_main, "slider", "esp_oof_radius", "Arrow Radius", { min = 50, max = 500, default = 250 })
+    MenuLib.add_element(vis_enemy_main, "slider", "esp_oof_size", "Arrow Size", { min = 8, max = 30, default = 14 })
+
+
+    MenuLib.add_element(vis_enemy_chams, "checkbox", "esp_ext_chams_enemy", "External Chams")
+MenuLib.add_element(vis_enemy_chams, "colorpicker_button", "esp_ext_chams_fill_enemy", "Fill Color", { default = {255, 105, 180, 200} }) -- Default Pink
+MenuLib.add_element(vis_enemy_chams, "colorpicker_button", "esp_ext_chams_out_enemy", "Outline Color", { default = {255, 255, 255, 255} }) -- Default White
+
 
     MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_box_color", "Box Color", { default = {255, 50, 50, 255} })
     MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_skeleton_color", "Skeleton Color", { default = {200, 200, 200, 255} })
     MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_name_color", "Name Color", { default = {255, 255, 255, 255} })
     MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_money_color", "Money Color", { default = {50, 200, 50, 255} })
     MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_distance_color", "Distance Color", { default = {220, 220, 220, 255} })
-    
+    MenuLib.add_element(vis_enemy_colors, "colorpicker_button", "esp_oof_color", "OoF Arrow Color", { default = {255, 50, 50, 200} })
+
     MenuLib.add_element(vis_enemy_glow, "checkbox", "esp_glow_enemy", "Enable Glow")
     MenuLib.add_element(vis_enemy_glow, "colorpicker_button", "esp_glow_color_enemy", "Glow Color", { default = {255, 0, 0, 255} })
 
@@ -3286,11 +3398,18 @@ end
     MenuLib.add_element(vis_team_main, "checkbox", "team_esp_enabled", "Enable Team ESP")
     MenuLib.add_element(vis_team_main, "checkbox", "team_box", "Box")
     MenuLib.add_element(vis_team_main, "singleselect", "team_box_type", "Box Type", { items = { "Normal", "Corner", "Filled" }, default = 1 })
-    MenuLib.add_element(vis_team_main, "singleselect", "team_skeleton_mode", "Skeleton", { items = { "Off", "Normal", "Circular", "Capsule" } })
+    MenuLib.add_element(vis_team_main, "singleselect", "team_skeleton_mode", "Skeleton", { items = { "Off", "Normal", "Circular"} })
     MenuLib.add_element(vis_team_main, "checkbox", "team_name", "Name")
     MenuLib.add_element(vis_team_main, "checkbox", "team_health", "Health Bar", { default = true })
+    MenuLib.add_element(vis_team_main, "checkbox", "team_armor", "Armor Bar")
     MenuLib.add_element(vis_team_main, "checkbox", "team_weapon", "Weapon")
     
+
+    MenuLib.add_element(vis_team_chams, "checkbox", "team_ext_chams", "External Chams")
+MenuLib.add_element(vis_team_chams, "colorpicker_button", "team_ext_chams_fill", "Fill Color", { default = {0, 150, 255, 200} })
+MenuLib.add_element(vis_team_chams, "colorpicker_button", "team_ext_chams_out", "Outline Color", { default = {255, 255, 255, 255} })
+
+
     MenuLib.add_element(vis_team_colors, "colorpicker_button", "team_box_color", "Box Color", { default = {0, 150, 255, 255} })
     MenuLib.add_element(vis_team_colors, "colorpicker_button", "team_skeleton_color", "Skeleton Color", { default = {200, 200, 200, 255} })
     MenuLib.add_element(vis_team_colors, "colorpicker_button", "team_name_color", "Name Color", { default = {255, 255, 255, 255} })
@@ -3317,8 +3436,14 @@ end
     MenuLib.add_element(vis_misc_main, "slider", "crosshair_thickness", "Thickness", { min = 0, max = 10, default = 2 })
     MenuLib.add_element(vis_misc_main, "slider", "crosshair_gap", "Gap", { min = 0, max = 10, default = 3 })
 
-    MenuLib.add_element(vis_misc_view, "checkbox", "misc_thirdperson", "Thirdperson")
-    MenuLib.add_element(vis_misc_view, "keybind", "misc_thirdperson_key", "Thirdperson Key", { default_key = 86, default_mode = 2 })
+MenuLib.add_element(vis_enemy_chams, "checkbox", "esp_chams_enemy", "Enable Chams")
+    MenuLib.add_element(vis_enemy_chams, "colorpicker_button", "esp_chams_color_enemy", "Chams Color", { default = {255, 0, 0, 255} })
+
+    -- [[ TEAM CHAMS ]]
+    MenuLib.add_element(vis_team_chams, "checkbox", "team_chams_enabled", "Enable Chams")
+    MenuLib.add_element(vis_team_chams, "colorpicker_button", "team_chams_color", "Chams Color", { default = {0, 255, 0, 255} })
+
+
 
 local misc_general = MenuLib.add_group("misc", "General", 1)
 local misc_indicators = MenuLib.add_group("misc", "Indicators", 1)
@@ -3329,13 +3454,12 @@ local misc_speclist = MenuLib.add_group("misc", "Spectator List", 2)
 
 
 MenuLib.add_element(misc_general, "checkbox", "misc_hitsound", "Hitsound - UC")
-MenuLib.add_element(misc_general, "checkbox", "misc_hitlog", "Hitlog - uc")
-MenuLib.add_element(misc_general, "checkbox", "misc_speclist", "Spectator List - UC")
+MenuLib.add_element(misc_general, "checkbox", "misc_hitlog", "Hitlog")
+MenuLib.add_element(misc_general, "checkbox", "misc_speclist", "Spectator List")
 MenuLib.add_element(misc_general, "checkbox", "misc_c4timer", "C4 Timer Panel")
 MenuLib.add_element(misc_general, "checkbox", "misc_radar", "Radar")
 MenuLib.add_element(misc_general, "checkbox", "misc_anti_flash", "Enable Anti-Flash")
-MenuLib.add_element(misc_general, "checkbox", "misc_thirdperson", "Enable Thirdperson")
-MenuLib.add_element(misc_general, "keybind", "misc_thirdperson_key", "Thirdperson Key", { default_key = 86, default_mode = 2 })
+
 MenuLib.add_element(misc_general, "checkbox", "misc_bhop", "Enable Bunnyhop", { default = true })
 
 MenuLib.add_element(misc_indicators, "multiselect", "indicator_features", "Enabled Indicators", { items = INDICATOR_OPTIONS, default = {[1]=true,[2]=true} })
@@ -3354,13 +3478,9 @@ MenuLib.add_element(misc_watermark, "colorpicker_button", "watermark_text_color"
 
 MenuLib.add_element(misc_crosshair, "checkbox", "sniper_crosshair_enabled", "Sniper Crosshair", { default = true })
 
-MenuLib.add_element(misc_crosshair, "checkbox", "recoil_dot_enabled", "Show Recoil Dot", { default = true })
-MenuLib.add_element(misc_crosshair, "colorpicker_button", "recoil_dot_color", "Recoil Dot Color", { default = {255, 0, 0, 255} })
+MenuLib.add_element(misc_crosshair, "checkbox", "misc_hitmarker", "Dynamic Hitmarker")
+MenuLib.add_element(misc_crosshair, "colorpicker_button", "misc_hitmarker_color", "Hitmarker Color", { default = {255, 255, 255, 255} })
 
-MenuLib.add_element(misc_crosshair, "checkbox", "crosshair_enabled", "Enable Crosshair")
-MenuLib.add_element(misc_crosshair, "colorpicker_button", "crosshair_color", "Crosshair Color", { default = {255, 255, 255, 255} })
-MenuLib.add_element(misc_crosshair, "slider", "crosshair_thickness", "Thickness", { min = 0, max = 10, default = 2 })
-MenuLib.add_element(misc_crosshair, "slider", "crosshair_gap", "Gap", { min = 0, max = 10, default = 3 })
 
 MenuLib.add_element(misc_hitlog, "colorpicker_button", "hitlog_bg_color", "Background Color", { default = {18, 18, 18, 255} })
 MenuLib.add_element(misc_hitlog, "colorpicker_button", "hitlog_outline_color", "Outline Color", { default = {30, 30, 30, 255} })
@@ -3436,6 +3556,56 @@ engine.log("SaikaidoSense UI Fully Loaded! Press INSERT to open.", 130, 100, 255
 
 
 local config_logs = {}
+local LayoutState = {
+    dragging_id = nil, drag_offset_x = 0, drag_offset_y = 0,
+    hitboxes = {},
+    offsets = {
+        name     = { x = 0, y = -100 },  -- Negative Y = Top Preference
+        health   = { x = -100, y = 0 },
+        armor    = { x = 0, y = 200 },
+        weapon   = { x = 0, y = 100 },   -- Positive Y = Bottom Preference
+        distance = { x = 0, y = 110 },   -- Slightly lower = Below weapon
+        money    = { x = 100, y = -50 }, -- Right side, upper
+        flags    = { x = 100, y = 0 },    -- Right side, middle
+        c4_carrier = { x = 100, y = 25 }
+    }
+}
+
+
+local PreviewAnim = {
+    slide_progress = 0,      -- 0 to 1
+    last_tab = "",           -- To reset anim on tab switch
+    hover_timers = {},       -- Smooth fade for hovering elements
+    pulse = 0                -- Breathing effect
+}
+
+local function draw_shook_style_bar(x, y, w, h, pct, color, orientation)
+    render.draw_rectangle(x, y, w, h, 20, 22, 25, 150, 0, true)
+    render.draw_rectangle(x, y, w, h, 0, 0, 0, 200, 1, false)
+
+    if pct > 0.01 then
+        local r, g, b, a = color[1], color[2], color[3], color[4]
+        
+        local PAD = 1
+        
+        if orientation == "vertical" then
+            local max_h = h - (PAD*2)
+            local fill_h = math.floor(max_h * pct)
+            local fill_y = (y + h - PAD) - fill_h
+            
+            if fill_h > 0 then
+                 render.draw_rectangle(x+PAD, fill_y, w-(PAD*2), fill_h, r, g, b, a, 0, true)
+            end
+        else
+            local max_w = w - (PAD*2)
+            local fill_w = math.floor(max_w * pct)
+            
+            if fill_w > 0 then
+                render.draw_rectangle(x+PAD, y+PAD, fill_w, h-(PAD*2), r, g, b, a, 0, true)
+            end
+        end
+    end
+end
 local function LogSuccess(msg)
     table.insert(config_logs, {
         text = msg,
@@ -3548,106 +3718,6 @@ local trigger_last_shot_time = 0
 local trigger_pending_actions = {}
 local last_trigger_delay = 0
 
-local offsets = {
-    dwViewMatrix = 0x1E323D0,
-    dwLocalPlayerPawn = 0x1BEEF28,
-    dwLocalPlayerController = 0x1E1DC18,
-    dwEntityList = 0x1D13CE8,
-    dwGlobalVars = 0x1BE41C0,
-    dwViewAngles = 0x1E3C800,
-    m_hPlayerPawn = 0x8FC,
-    m_bDormant = 0x10B,
-    m_angEyeAngles = 0x3DF0,
-    m_iHealth = 0x34C,
-    m_lifeState = 0x354,
-    m_Glow = 0xCB0,
-    m_glowColorOverride = 0x40,
-    m_bGlowing = 0x51,
-    m_iGlowType = 0x30,
-    m_iTeamNum = 0x3EB,
-    m_ArmorValue = 0x274C,
-    m_vOldOrigin = 0x15A0,
-    m_pGameSceneNode = 0x330,
-    m_modelState = 0x190,
-    m_boneArray = 0x80,
-    m_nodeToWorld = 0x10,
-    m_sSanitizedPlayerName = 0x850,
-    dwPlantedC4 = 0x1E36BE8,
-    m_nBombSite = 0x1164,
-    m_bBeingDefused = 0x119C,
-    m_bBombDefused = 0x11B4,
-    m_flFlashDuration = 0x1610,
-    m_vecAbsOrigin = 0xD0,  
-    m_hOwnerEntity = 0x520,      -- C_BaseEntity
-    m_pCameraServices = 0x1428,  
-    m_hPostProcessing = 0x1F4,   -- NOT UPDATED OFFSET  
-    m_flMinExposure = 0x1014,        
-    m_flMaxExposure = 0x1018,
-    m_pInGameMoneyServices = 0x7F8,
-    m_iAccount = 0x40,
-    m_pEntity = 0x10,
-    m_designerName = 0x20,
-    -- C_SmokeGrenadeProjectile offset
-    vSmokeColor = 0x1474,
-    m_iIDEntIndex = 0x3ECC,
-    m_vecVelocity = 0x430,
-    m_pClippingWeapon = 0x3DE0,
-    m_bIsScoped = 0x2718,
-     m_iszPlayerName = 0x6E8,
-    m_AttributeManager = 0x1390,
-    m_Item = 0x50,
-    m_iItemDefinitionIndex = 0x1BA,
-    m_entitySpottedState = 0x2700, 
-    m_bSpotted = 0x8,
-     m_vecViewOffset = 0xD80,
-     m_boneArray_aim = 0x80,
-     m_bSpottedByMask = 0xC,
-     v_angle = 0x14A8,
-    dwCSGOInput = 0x1E3C150, 
-    dwForceJump = 0x1BD54A0, 
-    m_bCameraInThirdPerson = 0x251, 
-    m_iShotsFired = 0x272C,      -- C_CSPlayerPawn
-    m_aimPunchAngle = 0x16E4,    -- C_CSPlayerPawn
-    m_aimPunchCache = 0x1708,     -- C_CSPlayerPawn
-    m_fFlags = 0x3F8,         -- C_BaseEntity::m_fFlags
-    m_hpawn = 0x6B4,
-    m_pObserverServices = 0x1408,
-    m_hObserverTarget = 0x44,
-    m_pWeaponServices = 0x13F0,
-    m_hActiveWeapon = 0x58,
-    m_flC4Blow = 0x1190,
-   
-
-
-}
-
-local g = {
-    font = render.create_font("Verdana", 12, 700),
-    small_font = render.create_font("Verdana", 11, 400)
-}
-
-local esp_fonts = {
-    font = render.create_font("Verdana", 12, 700),
-    small_font = render.create_font("Verdana", 11, 400),
-     name = render.create_font("Verdana", 12, 700),
-    weapon = render.create_font("Verdana", 11, 400)
-}
-
-local BONE_MAP = {
-    head = 6, neck_0 = 5, neck = 5, spine = 4, spine_1 = 4, spine_2 = 2, pelvis = 0,
-    arm_upper_L = 8, arm_lower_L = 9, hand_L = 10,
-    arm_upper_R = 13, arm_lower_R = 14, hand_R = 15,
-    leg_upper_L = 22, leg_lower_L = 23, ankle_L = 24,
-    leg_upper_R = 25, leg_lower_R = 26, ankle_R = 27
-}
-
-local BONE_MAP_aim = {
-    head = 6, neck = 5, spine = 4, pelvis = 0,
-    left_shoulder = 8, left_elbow = 9, left_hand = 10,
-    right_shoulder = 13, right_elbow = 14, right_hand = 15,
-    left_hip = 22, left_knee = 23, left_ankle = 24,
-    right_hip = 25, right_knee = 26, right_ankle = 27
-}
 
 local hitsound_path = "sounds/hitsound.mp3"
 local total_damage = 0
@@ -3774,6 +3844,8 @@ local function draw_capsule_line(p1, p2, radius, r, g, b, a)
     render.draw_circle(p2.x, p2.y, radius, r, g, b, a, 0, true)
 end
 
+
+
 function draw_capsule_skeleton(bones_2d, scale, color)
     local r, g, b, a = table.unpack(color)
     
@@ -3876,66 +3948,177 @@ function draw_capsule_skeleton(bones_2d, scale, color)
 end
 
 
+local function draw_preview_dummy(rect, alpha)
+    local col = {60, 60, 70, alpha}
+    local r, g, b = col[1], col[2], col[3]
+    
+    local x, y = rect.left, rect.top
+    local w = rect.right - rect.left
+    local h = rect.bottom - rect.top
+    local cx = x + (w / 2)
+    
+    local head_size = math.min(w * 0.4, h * 0.12)
+    local body_w = w * 0.65
+    local body_h = h * 0.4
+    local leg_w = body_w * 0.35
+    local arm_w = w * 0.15
+    
+    local head_y = y + (h * 0.08)
+    render.draw_circle(cx, head_y, head_size * 0.6, r, g, b, alpha, 0, true)
+    
+    local torso_y = head_y + (head_size * 0.6) + 4
+    render.draw_rectangle(cx - (body_w / 2), torso_y, body_w, body_h, r, g, b, alpha, 0, true, 6)
+    
+    local arm_y = torso_y + 2
+    local arm_h = body_h * 0.8
+    render.draw_rectangle(cx - (body_w / 2) - arm_w - 3, arm_y, arm_w, arm_h, r, g, b, alpha, 0, true, 4)
+    render.draw_rectangle(cx + (body_w / 2) + 3, arm_y, arm_w, arm_h, r, g, b, alpha, 0, true, 4)
+    
+    local leg_h = h - (torso_y - y + body_h) - 5
+    local leg_start_y = torso_y + body_h - 2
+    render.draw_rectangle(cx - (body_w * 0.35), leg_start_y, leg_w, leg_h, r, g, b, alpha, 0, true, 4)
+    render.draw_rectangle(cx + (body_w * 0.35) - leg_w, leg_start_y, leg_w, leg_h, r, g, b, alpha, 0, true, 4)
+end
 
 function draw_esp_placeholder()
-    local vw, vh = render.get_viewport_size()
-
-    local box_height = 280
-    local box_width = box_height / 2.0
-    local box_center_x = vw / 2
-    local box_top_y = vh / 2 - box_height / 2
+    if not LayoutState.offsets then LayoutState.offsets = {} end
     
-    local rect = {
-        top = box_top_y,
-        bottom = box_top_y + box_height,
-        left = box_center_x - (box_width / 2),
-        right = box_center_x + (box_width / 2)
+    LayoutState.hitboxes = {} 
+    
+    local now = winapi.get_tickcount64() / 1000 
+    PreviewAnim.pulse = (math.sin(now * 4) + 1) * 0.5 
+
+    local current_tab = Menu.active_sub_tab
+    if PreviewAnim.last_tab ~= current_tab then
+        PreviewAnim.slide_progress = 0
+        PreviewAnim.last_tab = current_tab
+    end
+    PreviewAnim.slide_progress = math.lerp(PreviewAnim.slide_progress, 1.0, 0.15)
+    
+    local panel_alpha = math.floor(255 * PreviewAnim.slide_progress)
+    if panel_alpha < 10 then return end
+
+    local menu_x = Menu.window.x
+    local menu_y = Menu.window.y
+    local menu_w = Menu.window.w
+    local menu_h = Menu.window.h
+    
+    local pw = 340 
+    
+    local target_x = menu_x + menu_w + 10
+    local bx = target_x - (50 * (1.0 - PreviewAnim.slide_progress))
+    local by = menu_y
+    local bh = menu_h
+
+    local c_bg = Menu.colors.bg_dark
+    local c_acc = Menu.colors.accent
+    render.draw_rectangle(bx, by, pw, bh, c_bg[1], c_bg[2], c_bg[3], panel_alpha, 0, true, 8)
+    render.draw_rectangle(bx, by, pw, bh, 60, 60, 70, panel_alpha, 1, false, 8)
+    render.draw_rectangle(bx + 15, by + 15, 2, 20, c_acc[1], c_acc[2], c_acc[3], panel_alpha, 0, true, 2)
+
+    render.draw_text(Menu.fonts.title, "Visuals Preview", bx + 25, by + 10, 255, 255, 255, panel_alpha, 0, 0, 0, 0, 0)
+    render.draw_text(Menu.fonts.main, "Drag text elements to reposition", bx + 25, by + 38, 130, 130, 140, panel_alpha, 0, 0, 0, 0, 0)
+    render.draw_line(bx + 15, by + 60, bx + pw - 15, by + 60, 60, 60, 65, panel_alpha, 1)
+
+ 
+    local view_x, view_y = bx + 20, by + 80
+    local view_w, view_h = pw - 40, bh - 100
+    
+    local v_cx = view_x + view_w / 2
+    local v_cy = view_y + view_h / 2
+    
+    local box_w, box_h = 140, 280
+    
+    local top, bot = v_cy - box_h/2, v_cy + box_h/2
+    local left, right = v_cx - box_w/2, v_cx + box_w/2
+    local rect = { top = top, bottom = bot, left = left, right = right }
+
+    draw_preview_dummy(rect, panel_alpha)
+
+    local prefix = (current_tab and string.find(current_tab, "vis_team")) and "team" or "esp"
+    
+    local sim_ent = {
+        name = "Player",
+        health = 92, armor = 100,
+        weapon = "AK-47", distance = 18, money = 12000,
+        is_scoped = true, is_flashed = true,
+        has_c4 = true, 
+        rect = rect
     }
 
+    render_entity_info(sim_ent, prefix, true) 
 
-    local placeholder_entity = {
-        health = 85,
-        armor = 75,
-        name = "Placeholder",
-        weapon = "AK47",
-        distance = 13,
-        rect = rect,
-        team = 2 
-    }
-    
-    render_entity_info(placeholder_entity)
-
-local skeleton_mode = MenuLib.get_value("esp_skeleton_mode")
-    if skeleton_mode > 1 then
-        local bones_2d = {
-            head = vec2(box_center_x, rect.top + (box_height * 0.05)),
-            neck_0 = vec2(box_center_x, rect.top + (box_height * 0.15)),
-            spine_1 = vec2(box_center_x, rect.top + (box_height * 0.30)),
-            pelvis = vec2(box_center_x, rect.top + (box_height * 0.55)),
-            arm_upper_L = vec2(rect.left + (box_width * 0.25), rect.top + (box_height * 0.32)),
-            arm_lower_L = vec2(rect.left + (box_width * 0.15), rect.top + (box_height * 0.50)),
-            hand_L = vec2(rect.left + (box_width * 0.1), rect.top + (box_height * 0.65)),
-            arm_upper_R = vec2(rect.right - (box_width * 0.25), rect.top + (box_height * 0.32)),
-            arm_lower_R = vec2(rect.right - (box_width * 0.15), rect.top + (box_height * 0.50)),
-            hand_R = vec2(rect.right - (box_width * 0.1), rect.top + (box_height * 0.65)),
-            leg_upper_L = vec2(box_center_x - (box_width * 0.15), rect.top + (box_height * 0.75)),
-            leg_lower_L = vec2(box_center_x - (box_width * 0.2), rect.top + (box_height * 0.90)),
-            ankle_L = vec2(box_center_x - (box_width * 0.25), rect.bottom),
-            leg_upper_R = vec2(box_center_x + (box_width * 0.15), rect.top + (box_height * 0.75)),
-            leg_lower_R = vec2(box_center_x + (box_width * 0.2), rect.top + (box_height * 0.90)),
-            ankle_R = vec2(box_center_x + (box_width * 0.25), rect.bottom)
+    local sk_mode = MenuLib.get_value(prefix .. "_skeleton_mode")
+    if sk_mode and sk_mode > 1 then
+        local sk_col = MenuLib.get_value(prefix .. "_skeleton_color") or {255,255,255,255}
+        local function get_bone(px, py)
+            return vec2(left + (box_w * px), top + (box_h * py))
+        end
+        local bones = {
+            head=get_bone(0.5, 0.08), neck=get_bone(0.5, 0.15),
+            spine=get_bone(0.5, 0.35), pelvis=get_bone(0.5, 0.55),
+            left_shoulder=get_bone(0.8, 0.2), left_elbow=get_bone(0.9, 0.35), left_hand=get_bone(0.85, 0.5),
+            right_shoulder=get_bone(0.2, 0.2), right_elbow=get_bone(0.1, 0.35), right_hand=get_bone(0.15, 0.5),
+            left_hip=get_bone(0.65, 0.55), left_knee=get_bone(0.7, 0.75), left_ankle=get_bone(0.65, 1.0),
+            right_hip=get_bone(0.35, 0.55), right_knee=get_bone(0.3, 0.75), right_ankle=get_bone(0.35, 1.0)
         }
-        
-        if skeleton_mode == 2 then
-            draw_skeleton(bones_2d)
-        elseif skeleton_mode == 3 then
-            draw_circular_skeleton(bones_2d, 1.0)
-        elseif skeleton_mode == 4 then
-    local scale = math.clamp(box_height / 320, 0.3, 1.6)
-    draw_capsule_skeleton(bones_2d, scale)
+        local remap = {
+             head="head", neck_0="neck", spine_1="spine", spine_2="pelvis", pelvis="pelvis",
+             arm_upper_L="left_shoulder", arm_lower_L="left_elbow", hand_L="left_hand",
+             arm_upper_R="right_shoulder", arm_lower_R="right_elbow", hand_R="right_hand",
+             leg_upper_L="left_hip", leg_lower_L="left_knee", ankle_L="left_ankle",
+             leg_upper_R="right_hip", leg_lower_R="right_knee", ankle_R="right_ankle"
+        }
+        local draw_bones = {}
+        for k, v in pairs(remap) do draw_bones[k] = bones[v] end
+
+        if sk_mode == 2 then draw_skeleton(draw_bones, sk_col)
+        elseif sk_mode == 3 then draw_circular_skeleton(draw_bones, 0.8, sk_col)
+        elseif sk_mode == 4 then draw_capsule_skeleton(draw_bones, 0.9, sk_col) end
+    end
+
+    local mx, my = input.get_mouse_position()
+    local lmb_down = input.is_key_down(1)
+    local lmb_pressed = input.is_key_pressed(1)
+
+    if lmb_pressed and not LayoutState.dragging_id then
+        for _, zone in ipairs(LayoutState.hitboxes) do
+            if mx >= zone.x and mx <= zone.x + zone.w and my >= zone.y and my <= zone.y + zone.h then
+                LayoutState.dragging_id = zone.id
+                
+                local elem_center_x = zone.x + (zone.w / 2)
+                local elem_center_y = zone.y + (zone.h / 2)
+                
+                LayoutState.drag_offset_x = elem_center_x - mx
+                LayoutState.drag_offset_y = elem_center_y - my
+                
+                Menu.click_consumed = true
+                break
+            end
         end
     end
+
+    if not lmb_down then 
+        LayoutState.dragging_id = nil 
+    end
+
+    if LayoutState.dragging_id then
+        local id = LayoutState.dragging_id
+        
+        local target_x = mx + LayoutState.drag_offset_x
+        local target_y = my + LayoutState.drag_offset_y
+        
+        local rel_x = target_x - v_cx
+        local rel_y = target_y - v_cy
+        
+        LayoutState.offsets[id] = { x = rel_x, y = rel_y }
+        
+        render.draw_line(v_cx, v_cy, target_x, target_y, c_acc[1], c_acc[2], c_acc[3], 150, 1)
+        render.draw_circle(v_cx, v_cy, 2, c_acc[1], c_acc[2], c_acc[3], 255, 0, true)
+    end
 end
+
+local hitmarker = { alpha = 0, last_hit_time = 0 }
 
 local hitlog_health_cache = {}
 
@@ -4205,34 +4388,32 @@ if watermark_visible then
             watermark_drag_y = my - watermark_drag_offset_y
             update_watermark_textfields()
         end
-        if alpha > 0 then
+       if alpha > 0 then
             local bx, by = watermark_drag_x, watermark_drag_y
             local rounding = 6
             local accent = Menu.colors.accent 
             local bg = Menu.colors.bg_dark
             local dim = Menu.colors.text_dim
             
-
             local f_bold = Menu.fonts.group 
             local f_norm = Menu.fonts.main  
             
-
             local txt_title = "SHOOK"
             local txt_fps   = string.format("FPS: %d", math.floor(DisplaySystem.state.fps_value))
             local txt_user  = DisplaySystem.config.username or "User"
-            local txt_ping  = "Ping: 0ms" 
+            local txt_cfg   = MenuLib.current_config or "Default" -- [Added] Get Config Name
 
             local pad_x, pad_y = 12, 7
             local w_title = render.measure_text(f_bold, txt_title)
             local w_div   = 16 
             local w_user  = render.measure_text(f_norm, txt_user)
+            local w_cfg   = render.measure_text(f_norm, txt_cfg) -- [Added] Measure Config Name
             local w_fps   = render.measure_text(f_norm, txt_fps)
             
-            local bw = pad_x + w_title + w_div + w_user + w_div + w_fps + pad_x
+            local bw = pad_x + w_title + w_div + w_user + w_div + w_cfg + w_div + w_fps + pad_x
             local bh = 30
             
             render.draw_rectangle(bx, by, bw, bh, bg[1], bg[2], bg[3], math.floor(alpha * 0.95), 0, true, rounding)
-            
             render.draw_rectangle(bx + 2, by + 2, bw, bh, 0, 0, 0, math.floor(alpha * 0.3), 0, true, rounding + 2)
 
             local bar_h = 2
@@ -4241,12 +4422,12 @@ if watermark_visible then
                 {accent[1], accent[2], accent[3], math.floor(alpha * 0.3)}
             }
             render.draw_gradient_rectangle(bx, by, bw, bar_h, grad_colors, rounding)
-
             render.draw_rectangle(bx, by, bw, bh, 60, 60, 65, math.floor(alpha * 0.4), 1, false, rounding)
             
             local cursor_x = bx + pad_x
             local text_y = by + (bh / 2) - 6 
 
+            -- Draw Title
             render.draw_text(f_bold, txt_title, cursor_x, text_y, accent[1], accent[2], accent[3], alpha, 0, 0, 0, 0, 0)
             cursor_x = cursor_x + w_title
 
@@ -4255,11 +4436,19 @@ if watermark_visible then
                 render.draw_line(sx, cy - 5, sx, cy + 6, 70, 70, 80, a, 1)
             end
 
+            -- Draw User
             draw_sep(cursor_x, text_y + 6, alpha)
             cursor_x = cursor_x + w_div
             render.draw_text(f_norm, txt_user, cursor_x, text_y, 220, 220, 220, alpha, 0, 0, 0, 0, 0)
             cursor_x = cursor_x + w_user
 
+            -- Draw Config Name
+            draw_sep(cursor_x, text_y + 6, alpha)
+            cursor_x = cursor_x + w_div
+            render.draw_text(f_norm, txt_cfg, cursor_x, text_y, 200, 200, 200, alpha, 0, 0, 0, 0, 0)
+            cursor_x = cursor_x + w_cfg
+
+            -- Draw FPS
             draw_sep(cursor_x, text_y + 6, alpha)
             cursor_x = cursor_x + w_div
             render.draw_text(f_norm, txt_fps, cursor_x, text_y, dim[1], dim[2], dim[3], alpha, 0, 0, 0, 0, 0)
@@ -4561,7 +4750,9 @@ end
             --     end
             -- end
         end
-            draw_esp_placeholder()
+               if Menu.visible and Menu.active_tab == "visuals" and Menu.active_sub_tab == "vis_enemy" then
+        draw_esp_placeholder()
+    end
         return
     end
 
@@ -4639,6 +4830,8 @@ end
                     
     
                     if dmg > 0 and dmg <= 150 and is_my_damage_window then
+                          hitmarker.alpha = 255 
+    hitmarker.last_hit_time = winapi.get_tickcount64()
                         local name_ptr = proc.read_int64(controller + offsets.m_sSanitizedPlayerName)
                         local name = proc.read_string(name_ptr, 32)
                         if not name or name == "" then name = "Enemy" end
@@ -4702,8 +4895,182 @@ end)
 local font = render.create_font("Tahoma", 13, 400)
 
 
+
+
 local spec_font = render.create_font("Verdana", 12, 500)
-local spectators = {}
+
+
+-- [[ SPECTATOR SYSTEM ]]
+-- [[ SPECTATOR SYSTEM ]]
+local SpectatorSys = {
+    list = {},
+    last_update = 0
+}
+
+local function safe_get_name(controller)
+    local status, name = pcall(function()
+        local name_ptr = proc.read_int64(controller + offsets.m_sSanitizedPlayerName)
+        if not name_ptr or name_ptr == 0 then return "Unknown" end
+        return proc.read_string(name_ptr, 32)
+    end)
+    return (status and name and name ~= "") and name or "Spectator"
+end
+
+local function get_pawn_from_handle_ptr(entity_list, handle)
+    if handle == 0 then return 0 end
+    local index = handle & 0x7FFF
+    local chunk = index >> 9
+    local chunk_ptr = proc.read_int64(entity_list + 8 * chunk + 16)
+    if chunk_ptr == 0 then return 0 end
+    return proc.read_int64(chunk_ptr + 112 * (index & 0x1FF)) 
+end
+
+local function update_spectators_handle_based()
+    local now = winapi.get_tickcount64()
+    if now - SpectatorSys.last_update < 250 then return end
+    SpectatorSys.last_update = now
+    
+    local temp_list = {} 
+    
+    if not proc.is_attached() then return end
+    local client = proc.find_module("client.dll")
+    if not client then return end
+    
+    local entity_list = proc.read_int64(client + offsets.dwEntityList)
+    if entity_list == 0 then return end
+
+    local local_controller = proc.read_int64(client + offsets.dwLocalPlayerController)
+    if not local_controller or local_controller == 0 then return end
+
+    local local_pawn_h = proc.read_int32(local_controller + offsets.m_hPawn)
+    if not local_pawn_h or local_pawn_h == 0 then return end
+    
+    local function get_pawn_by_handle(handle)
+        local index = handle & 0x7FFF
+        local chunk = index >> 9
+        local chunk_ptr = proc.read_int64(entity_list + 8 * chunk + 16)
+        if chunk_ptr == 0 then return 0 end
+        return proc.read_int64(chunk_ptr + 112 * (index & 0x1FF))
+    end
+
+    local my_pawn = get_pawn_by_handle(local_pawn_h)
+    if not my_pawn or my_pawn == 0 then return end
+
+    for i = 0, 64 do
+        local list_entry = proc.read_int64(entity_list + 8 * ((i >> 9) & 0x7FFF) + 16)
+        if list_entry ~= 0 then
+            local controller = proc.read_int64(list_entry + 112 * (i & 0x1FF))
+            
+            if controller and controller ~= 0 and controller ~= local_controller then
+
+                local pawn_h = proc.read_int32(controller + offsets.m_hPawn)
+
+                if not pawn_h or pawn_h <= 0 or pawn_h == 0xFFFFFFFF then
+                    pawn_h = proc.read_int32(controller + offsets.m_hObserverPawn)
+                end
+
+                if pawn_h and pawn_h > 0 and pawn_h ~= 0xFFFFFFFF then
+                    local pawn = get_pawn_by_handle(pawn_h)
+                    
+                    if pawn and pawn ~= 0 then
+
+                        local observer_svc = proc.read_int64(pawn + offsets.m_pObserverServices)
+                        
+                        if observer_svc ~= 0 then
+                            local target_h = proc.read_int32(observer_svc + offsets.m_hObserverTarget)
+                            
+                            if target_h and target_h > 0 and target_h ~= 0xFFFFFFFF then
+                                local target_pawn = get_pawn_by_handle(target_h)
+                                
+                                if target_pawn == my_pawn then
+                                    local name = safe_get_name(controller)
+                                    table.insert(temp_list, name)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    SpectatorSys.list = temp_list
+end
+
+local function draw_spectators()
+    if not MenuLib.get_value("misc_speclist") then return end
+    
+
+    pcall(update_spectators_handle_based)
+
+    local target_alpha = (#SpectatorSys.list > 0 or Menu.visible) and 255 or 0
+    if not speclist_anim then speclist_anim = { alpha = 0 } end
+    speclist_anim.alpha = math.lerp(speclist_anim.alpha, target_alpha, 0.1)
+    
+    if speclist_anim.alpha < 1 then return end
+    local alpha = math.floor(speclist_anim.alpha)
+
+
+    local count = #SpectatorSys.list
+    local bw = 200
+    local header_h = 32 
+    local item_h = 22
+    local padding = 10
+    local bh = header_h + (math.max(1, count) * item_h) + (padding / 2)
+    
+    if not speclist_dragging then
+        speclist_drag_x, speclist_drag_y = parse_pos(MenuLib.get_value("pos_speclist"))
+    end
+    local x, y = speclist_drag_x, speclist_drag_y
+
+    local mx, my = input.get_mouse_position()
+    local hover = mx >= x and mx <= x + bw and my >= y and my <= y + bh
+    
+    if Menu.visible and hover and input.is_key_pressed(1) and not speclist_dragging then
+        speclist_dragging = true
+        speclist_drag_offset_x = mx - x
+        speclist_drag_offset_y = my - y
+    end
+    
+    if speclist_dragging then
+        if not input.is_key_down(1) then 
+            speclist_dragging = false
+        else
+            local nx, ny = mx - speclist_drag_offset_x, my - speclist_drag_offset_y
+            MenuLib.set_value("pos_speclist", string.format("%d,%d", nx, ny))
+            speclist_drag_x, speclist_drag_y = nx, ny
+            x, y = nx, ny
+        end
+    end
+
+    local c_bg = Menu.colors.bg_dark      -- Main Menu Background
+    local c_outline = Menu.colors.bg_light -- Menu Borders/Separators
+    local c_text = Menu.colors.text_main   -- Main Text
+    local c_dim = Menu.colors.text_dim     -- Dimmed Text
+    local c_acc = Menu.colors.accent       -- Accent (for small details)
+
+    render.draw_rectangle(x + 2, y + 2, bw, bh, 0, 0, 0, math.floor(alpha * 0.3), 6, true)
+
+    render.draw_rectangle(x, y, bw, bh, c_bg[1], c_bg[2], c_bg[3], math.floor(alpha * 0.95), 0, true, 6)
+
+    render.draw_rectangle(x, y, bw, bh, c_outline[1], c_outline[2], c_outline[3], alpha, 1, false, 6)
+    render.draw_text(Menu.fonts.group, "Spectators", x + 12, y + 9, c_text[1], c_text[2], c_text[3], alpha, 0, 0, 0, 0, 0)
+    render.draw_rectangle(x + 6, y + 10, 2, 12, c_acc[1], c_acc[2], c_acc[3], alpha, 0, true, 1)
+    render.draw_line(x + 10, y + header_h - 2, x + bw - 10, y + header_h - 2, c_outline[1], c_outline[2], c_outline[3], alpha, 1)
+
+    -- 7. The List
+    local cur_y = y + header_h + 2
+    if count == 0 then
+        render.draw_text(Menu.fonts.main, "None", x + 14, cur_y, c_dim[1], c_dim[2], c_dim[3], alpha, 0, 0, 0, 0, 0)
+    else
+        for i, name in ipairs(SpectatorSys.list) do
+            if #name > 24 then name = string.sub(name, 1, 22) .. ".." end
+            render.draw_text(Menu.fonts.main, name, x + 14, cur_y, c_dim[1], c_dim[2], c_dim[3], alpha, 0, 0, 0, 0, 0)
+            
+            cur_y = cur_y + item_h
+        end
+    end
+end
 
 if not speclist_anim then
     speclist_anim = { visible = false, anim_progress = 0, alpha = 0, slide_offset = 0, last_tick = 0 }
@@ -4892,6 +5259,7 @@ function handle_nightmode()
 end
 
 
+
 function trigger_schedule_action(ms, callback)
     table.insert(trigger_pending_actions, {
         execute_at = winapi.get_tickcount64() + ms,
@@ -5064,16 +5432,621 @@ local function draw_feature_indicators()
     end
 end
 
+local _chams_needs_reset = true
+local _reset_timer = 0
+local _script_load_time = winapi.get_tickcount64()
+
+
+function UpdateChams(entity_ptr, color, bool)
+    if not entity_ptr or entity_ptr == 0 then return end
+
+    local m_bGunGameImmunity = 0x3D94
+    local m_flImmuneToGunGameDamageTime = 0x3D90
+    local m_GunGameImmunityColor = 0x2480
+    
+
+    if (winapi.get_tickcount64() - _script_load_time) < 1000 then
+        proc.write_int8(entity_ptr + m_bGunGameImmunity, 0)
+        return
+    end
+
+    if bool then
+        if color then
+            local r, g, b, a = table.unpack(color)
+
+            proc.write_int8(entity_ptr + m_GunGameImmunityColor + 0, math.floor(r))
+            proc.write_int8(entity_ptr + m_GunGameImmunityColor + 1, math.floor(g))
+            proc.write_int8(entity_ptr + m_GunGameImmunityColor + 2, math.floor(b))
+            proc.write_int8(entity_ptr + m_GunGameImmunityColor + 3, 255) 
+        end
+
+        proc.write_int8(entity_ptr + m_bGunGameImmunity, 1) 
+        
+
+        proc.write_float(entity_ptr + m_flImmuneToGunGameDamageTime, 4500000.0) 
+    else
+        proc.write_int8(entity_ptr + m_bGunGameImmunity, 0) 
+    end
+end
+
+
+
+
+local function draw_oof_arrow(local_yaw, target_pos, local_pos)
+    local radius = MenuLib.get_value("esp_oof_radius") or 300
+    local size = MenuLib.get_value("esp_oof_size") or 15
+    local base_col = MenuLib.get_value("esp_oof_color") or {255, 50, 50, 200}
+    
+    local time = winapi.get_tickcount64() / 1000
+    local pulse = (math.sin(time * 5) + 1) * 0.5 
+    local alpha_pulse = math.floor(base_col[4] * (0.6 + (0.4 * pulse)))
+
+    local sw, sh = render.get_viewport_size()
+    local cx, cy = sw / 2, sh / 2
+
+    local dx = target_pos.x - local_pos.x
+    local dy = target_pos.y - local_pos.y
+    local target_yaw = math.deg(math.atan(dy, dx))
+    local yaw_diff = target_yaw - local_yaw
+    
+    local rad = math.rad(yaw_diff - 90) 
+
+    local ax = cx + math.cos(rad) * radius
+    local ay = cy + math.sin(rad) * radius
+
+    local width = size * 0.8
+    local height = size
+    local indent = size * 0.4 -- How deep the bottom notch goes
+
+    local raw_points = {
+        {0, -height},       -- Tip (Top)
+        {width, height},    -- Right Wing (Bottom Right)
+        {0, height - indent}, -- Notch (Bottom Center)
+        {-width, height}    -- Left Wing (Bottom Left)
+    }
+
+    local cos_r = math.cos(rad + math.pi/2) 
+    local sin_r = math.sin(rad + math.pi/2)
+
+    local function rotate_and_translate(px, py)
+        return {
+            x = ax + (px * cos_r - py * sin_r),
+            y = ay + (px * sin_r + py * cos_r)
+        }
+    end
+
+    local p1 = rotate_and_translate(raw_points[1][1], raw_points[1][2])
+    local p2 = rotate_and_translate(raw_points[2][1], raw_points[2][2])
+    local p3 = rotate_and_translate(raw_points[3][1], raw_points[3][2])
+    local p4 = rotate_and_translate(raw_points[4][1], raw_points[4][2])
+
+    local glow_layers = 3
+    for i = glow_layers, 1, -1 do
+        local expand = i * 2
+        local glow_alpha = math.floor(alpha_pulse / (i * 2.5))
+        
+        render.draw_polygon(
+            {p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y},
+            base_col[1], base_col[2], base_col[3], glow_alpha, 
+            expand,
+            false 
+        )
+    end
+
+    render.draw_polygon(
+        {p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y},
+        base_col[1], base_col[2], base_col[3], alpha_pulse, 
+        0, 
+        true 
+    )
+    
+    render.draw_polygon(
+        {p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y},
+        255, 255, 255, math.floor(alpha_pulse * 0.8), 
+        1, 
+        false
+    )
+end
+
+
+local function draw_dynamic_hitmarker()
+    if not MenuLib.get_value("misc_hitmarker") then return end
+    
+    if not hitmarker or hitmarker.alpha <= 0 then return end
+
+    hitmarker.alpha = math.lerp(hitmarker.alpha, 0, 0.05)
+
+    local sw, sh = render.get_viewport_size()
+    local cx, cy = sw / 2, sh / 2
+    local size = 6
+    local gap = 5
+    
+    local col = MenuLib.get_value("misc_hitmarker_color") or {255, 255, 255, 255}
+    local r, g, b = col[1], col[2], col[3]
+    local a = math.floor(hitmarker.alpha)
+
+    render.draw_line(cx - gap, cy - gap, cx - gap - size, cy - gap - size, r, g, b, a, 1.5)
+    render.draw_line(cx + gap, cy - gap, cx + gap + size, cy - gap - size, r, g, b, a, 1.5)
+    render.draw_line(cx - gap, cy + gap, cx - gap - size, cy + gap + size, r, g, b, a, 1.5)
+    render.draw_line(cx + gap, cy + gap, cx + gap + size, cy + gap + size, r, g, b, a, 1.5)
+end
+
+
+local function draw_general_crosshair(game)
+    if not MenuLib.get_value("crosshair_enabled") then return end
+
+    if game and game.local_pawn and game.local_pawn ~= 0 then
+        local is_scoped = proc.read_int8(game.local_pawn + offsets.m_bIsScoped) > 0
+        if is_scoped then return end
+
+
+        local weapon_id = get_active_weapon_id(game.local_pawn, game.entity_list)
+        local weapon_cat = get_weapon_category(weapon_id)
+        
+        if weapon_cat == "legit_sniper" then 
+            return 
+        end
+    end
+
+    local col = MenuLib.get_value("crosshair_color") or {0, 255, 0, 255}
+    local outline_enabled = MenuLib.get_value("crosshair_outline")
+    local dot_enabled = MenuLib.get_value("crosshair_dot")
+    local t_style = MenuLib.get_value("crosshair_tstyle")
+    
+    local size = MenuLib.get_value("crosshair_size") or 6
+    local thickness = MenuLib.get_value("crosshair_thickness") or 2
+    local gap = MenuLib.get_value("crosshair_gap") or 3
+
+    local sw, sh = render.get_viewport_size()
+    local cx, cy = math.floor(sw / 2), math.floor(sh / 2)
+
+    local r, g, b, a = col[1], col[2], col[3], col[4]
+
+    local function draw_bar(x, y, w, h)
+        if outline_enabled then
+            render.draw_rectangle(x - 1, y - 1, w + 2, h + 2, 0, 0, 0, 255, 0, true) -- Black bg
+        end
+        render.draw_rectangle(x, y, w, h, r, g, b, a, 0, true) -- Colored fg
+    end
+
+    if dot_enabled then
+        local dot_size = thickness
+        local dx = cx - math.floor(dot_size / 2)
+        local dy = cy - math.floor(dot_size / 2)
+        draw_bar(dx, dy, dot_size, dot_size)
+    end
+
+    local thick_offset = math.floor(thickness / 2)
+    
+    draw_bar(cx - gap - size, cy - thick_offset, size, thickness)
+    draw_bar(cx + gap, cy - thick_offset, size, thickness)
+    draw_bar(cx - thick_offset, cy + gap, thickness, size)
+    if not t_style then
+        draw_bar(cx - thick_offset, cy - gap - size, thickness, size)
+    end
+end
+
+local hitmarker = { alpha = 0, last_hit_time = 0 }
+
+
+local VelGraph = {
+    history = {},
+    max_history = 60,
+    w = 200, h = 60
+}
+
+function DrawVelocityGraph(local_pawn)
+    if not MenuLib.get_value("misc_bhop") then return end 
+    if not local_pawn or local_pawn == 0 then return end
+
+    local vel = vec3.read_float(local_pawn + offsets.m_vecVelocity)
+    local speed = math.sqrt(vel.x^2 + vel.y^2) -- 2D speed
+
+    table.insert(VelGraph.history, speed)
+    if #VelGraph.history > VelGraph.max_history then
+        table.remove(VelGraph.history, 1)
+    end
+
+    local sw, sh = render.get_viewport_size()
+    local x = sw / 2 - VelGraph.w / 2
+    local y = sh - 150 
+
+    -- Draw Background
+    render.draw_rectangle(x, y, VelGraph.w, VelGraph.h, 20, 20, 20, 150, 0, true, 4)
+    render.draw_rectangle(x, y, VelGraph.w, VelGraph.h, 60, 60, 60, 200, 1, false, 4)
+
+    local max_speed = 320
+    local step = VelGraph.w / VelGraph.max_history
+
+    for i = 1, #VelGraph.history - 1 do
+        local s1 = math.min(VelGraph.history[i], max_speed)
+        local s2 = math.min(VelGraph.history[i+1], max_speed)
+
+        local h1 = (s1 / max_speed) * VelGraph.h
+        local h2 = (s2 / max_speed) * VelGraph.h
+
+        local cur_x = x + (i * step)
+        local next_x = x + ((i + 1) * step)
+        
+        -- Color turns red if > 250 (running speed)
+        local r, g = 255, 255
+        if s1 > 250 then r=0; g=255 else r=255; g=math.floor((s1/250)*255) end
+
+        render.draw_line(cur_x, y + VelGraph.h - h1, next_x, y + VelGraph.h - h2, r, g, 0, 255, 2)
+    end
+
+    local txt = string.format("%d u/s", math.floor(speed))
+    local tw, th = render.measure_text(Menu.fonts.group, txt)
+    render.draw_text(Menu.fonts.group, txt, x + VelGraph.w/2 - tw/2, y - 15, 255, 255, 255, 255, 1, 0,0,0,150)
+end
 
 
 
 
 
 
+local EntityCache = {
+    players = {},
+    local_player = nil,
+    mutex = false
+}
+
+local function UpdateEntityCache(game_ctx)
+    EntityCache.players = {}
+    
+    if not game_ctx.entity_list or game_ctx.entity_list == 0 then return end
+    
+    EntityCache.local_player = {
+        pawn = game_ctx.local_pawn,
+        team = game_ctx.local_team,
+        origin = nil 
+    }
+
+    local local_origin_node = proc.read_int64(game_ctx.local_pawn + offsets.m_pGameSceneNode)
+    if local_origin_node and local_origin_node ~= 0 then
+        EntityCache.local_player.origin = vec3.read_float(local_origin_node + offsets.m_vecAbsOrigin)
+    end
+
+    for i = 1, 64 do
+        local list_entry = proc.read_int64(game_ctx.entity_list + 0x8 * ((i & 0x7FFF) >> 9) + 16)
+        if list_entry and list_entry ~= 0 then
+            local controller = proc.read_int64(list_entry + 112 * (i & 0x1FF))
+            if controller and controller ~= 0 then
+                local pawn_h = proc.read_int32(controller + offsets.m_hPlayerPawn)
+                if pawn_h and pawn_h > 0 then
+                    local list_entry2 = proc.read_int64(game_ctx.entity_list + 0x8 * ((pawn_h & 0x7FFF) >> 9) + 16)
+                    local pawn = proc.read_int64(list_entry2 + 112 * (pawn_h & 0x1FF))
+                    
+                    if pawn and pawn ~= 0 and pawn ~= game_ctx.local_pawn then
+                        local life = proc.read_int32(pawn + offsets.m_lifeState)
+                        if life == 256 then -- Alive
+                            local team = proc.read_int32(pawn + offsets.m_iTeamNum)
+                            local hp = proc.read_int32(pawn + offsets.m_iHealth)
+                            
+                            if hp > 0 then
+                                table.insert(EntityCache.players, {
+                                    index = i,
+                                    controller = controller,
+                                    pawn = pawn,
+                                    team = team,
+                                    health = hp,
+                                    dormant = proc.read_int32(pawn + offsets.m_bDormant),
+                                    is_enemy = (team ~= game_ctx.local_team)
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+
+
+local debug_c4_timer = 0
+local function debug_log(msg)
+    local now = winapi.get_tickcount64()
+    if now - debug_c4_timer > 2000 then 
+        engine.log("[C4 DBG] " .. msg, 255, 255, 0, 255)
+        debug_c4_timer = now
+    end
+end
+
+
+local planted_bomb_state = { last_entity = 0, last_pos = nil, last_blow_time = 0, last_server_time = 0 }
+
+local function is_valid_number(n)
+    return n and n == n and n ~= math.huge and n ~= -math.huge
+end
+
+local function get_server_time(client_dll)
+    local gvars_ptr = proc.read_int64(client_dll + offsets.dwGlobalVars)
+    if gvars_ptr and gvars_ptr ~= 0 then
+        local t = proc.read_float(gvars_ptr + 0x2C)
+        if t and t > 10 then return t end
+    end
+    
+    local local_controller = proc.read_int64(client_dll + offsets.dwLocalPlayerController)
+    if local_controller and local_controller ~= 0 then
+        local tick_base = proc.read_int32(local_controller + offsets.m_nTickBase)
+        if tick_base and tick_base > 0 then
+            return tick_base * 0.015625
+        end
+    end
+    return 0
+end
+
+local function get_planted_bomb_info(client_dll)
+    local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+    if not entity_list or entity_list == 0 then return nil end
+
+    local c4_address = 0
+    local valid_c4 = false
+
+
+    for i = 64, 1024 do 
+        local chunk = i >> 9
+        local chunk_ptr = proc.read_int64(entity_list + 8 * chunk + 16)
+        if chunk_ptr ~= 0 then
+            local ent = proc.read_int64(chunk_ptr + 112 * (i & 0x1FF))
+            if ent and ent ~= 0 then
+
+                local length = proc.read_float(ent + offsets.m_flTimerLength)
+                
+                if length > 29 and length < 61 then
+                     local ticking = proc.read_int8(ent + offsets.m_bBombTicking)
+                     local defused = proc.read_int8(ent + offsets.m_bBombDefused)
+                     local blow = proc.read_float(ent + offsets.m_flC4Blow)
+
+                     if (ticking == 1 or defused == 1) and blow > 0 then
+                        c4_address = ent
+                        valid_c4 = true
+                        break
+                     end
+                end
+            end
+        end
+    end
+
+    if not valid_c4 then return nil end
+    
+    local server_time = get_server_time(client_dll)
+    local blow_time = proc.read_float(c4_address + offsets.m_flC4Blow)
+    local timer_length = proc.read_float(c4_address + offsets.m_flTimerLength)
+    local defused = proc.read_int8(c4_address + offsets.m_bBombDefused)
+
+    if defused == 1 then
+        return { active = true, is_defused = true, time_left = 0, max_time = 1 } 
+    end
+
+    if server_time == 0 or blow_time == 0 then return nil end
+
+    local time_left = blow_time - server_time
+
+    if time_left > 100 or time_left < -2 then return nil end
+
+    if not timer_length or timer_length <= 0 then timer_length = 40.0 end
+
+    local is_defusing = proc.read_int8(c4_address + offsets.m_bBeingDefused) == 1
+    local defuse_left = 0
+    local defuse_max = 0
+
+    if is_defusing then
+        defuse_max = proc.read_float(c4_address + offsets.m_flDefuseLength)
+        if defuse_max <= 0 then defuse_max = 10.0 end
+
+        local defuse_end = proc.read_float(c4_address + offsets.m_flDefuseCountDown)
+        if defuse_end > 0 then
+            defuse_left = defuse_end - server_time
+        end
+    end
+
+    local game_scene = proc.read_int64(c4_address + offsets.m_pGameSceneNode)
+    local pos = {x=0, y=0, z=0}
+    if game_scene ~= 0 then
+        pos = vec3.read_float(game_scene + offsets.m_vecAbsOrigin)
+    end
+    
+    local is_round_change = false
+    if planted_bomb_state.last_pos and planted_bomb_state.last_entity == c4_address then
+        local dx = pos.x - planted_bomb_state.last_pos.x
+        local dy = pos.y - planted_bomb_state.last_pos.y
+        if (dx*dx + dy*dy) > 250000 then is_round_change = true end 
+    end
+
+    if is_round_change then
+        planted_bomb_state = { last_entity = 0, last_pos = nil, last_blow_time = 0, last_server_time = 0 }
+        return nil
+    end
+
+    planted_bomb_state.last_entity = c4_address
+    planted_bomb_state.last_pos = pos
+    planted_bomb_state.last_blow_time = blow_time
+    planted_bomb_state.last_server_time = server_time
+
+    local site_id = proc.read_int32(c4_address + offsets.m_nBombSite)
+
+    return {
+        active = true,
+        is_defused = false,
+        site = (site_id == 1) and "B" or "A",
+        time_left = math.max(0, time_left),
+        max_time = timer_length,
+        is_defusing = is_defusing,
+        defuse_left = math.max(0, defuse_left),
+        defuse_max = defuse_max,
+        can_defuse = is_defusing and (defuse_left < time_left)
+    }
+end
+
+function handle_c4data()
+    if not MenuLib.get_value("misc_c4timer") then return end
+
+    local client = proc.find_module("client.dll")
+    if not client then return end
+    
+    local c4 = get_planted_bomb_info(client) 
+
+
+    if (not c4 or not c4.active) and Menu.visible then
+        c4 = {
+            active = true,
+            is_defused = false,
+            site = "A",
+            time_left = 32.5,     
+            max_time = 40.0,
+            is_defusing = true,  
+            defuse_left = 4.5,
+            defuse_max = 10.0,
+            can_defuse = true,
+            error = false
+        }
+    end
+    
+    if not c4 or not c4.active then return end
+    
+    if not Menu.visible and c4.is_defused and c4.time_left <= 0 then return end 
+
+
+    if not bombpanel_dragging then
+        bombpanel_drag_x, bombpanel_drag_y = parse_pos(MenuLib.get_value("pos_bomb"))
+    end
+    local bx, by = bombpanel_drag_x, bombpanel_drag_y
+    local bw, bh = 220, 75
+
+    local mx, my = input.get_mouse_position()
+    
+
+    if Menu.visible and input.is_key_pressed(1) and mx>=bx and mx<=bx+bw and my>=by and my<=by+bh and not bombpanel_dragging then
+        bombpanel_dragging = true; bombpanel_drag_offset_x = mx - bx; bombpanel_drag_offset_y = my - by
+    end
+    if bombpanel_dragging then
+        if not input.is_key_down(1) then bombpanel_dragging = false
+        else 
+            local nx,ny = mx - bombpanel_drag_offset_x, my - bombpanel_drag_offset_y
+            MenuLib.set_value("pos_bomb", string.format("%d,%d", nx, ny))
+            bx, by = nx, ny
+        end
+    end
+
+
+    local c_bg = Menu.colors.bg_dark or {22, 23, 27}
+    local c_out = Menu.colors.bg_light or {60, 60, 70}
+    
+
+    render.draw_rectangle(bx, by, bw, bh, c_bg[1], c_bg[2], c_bg[3], 240, 0, true, 6)
+    render.draw_rectangle(bx, by, bw, bh, c_out[1], c_out[2], c_out[3], 255, 1, false, 6)
+    
+    local icon_col = {255, 50, 50}
+    if c4.is_defusing then icon_col = c4.can_defuse and {100, 255, 100} or {255, 255, 100} end
+    if c4.is_defused then icon_col = {0, 255, 0} end
+
+    local title_txt = c4.is_defused and "Bomb Defused" or ("Planted - Site " .. c4.site)
+    if c4.error then title_txt = "SYNC ERROR" end
+
+
+    render.draw_circle(bx + 15, by + 15, 5, icon_col[1], icon_col[2], icon_col[3], 255, 0, true)
+    
+
+    render.draw_text(Menu.fonts.group, title_txt, bx + 28, by + 8, 255, 255, 255, 255, 0,0,0,0,0)
+
+    if not c4.is_defused and not c4.error then
+
+        local time_str = string.format("%.1fs", c4.time_left)
+        local tw = render.measure_text(Menu.fonts.group, time_str)
+        render.draw_text(Menu.fonts.group, time_str, bx + bw - tw - 12, by + 8, 255, 255, 255, 255, 0,0,0,0,0)
+
+
+        local bar_x = bx + 12; local bar_y = by + 30; local bar_w = bw - 24; local bar_h = 6
+        local pct = math.clamp(c4.time_left / c4.max_time, 0, 1)
+        render.draw_rectangle(bar_x, bar_y, bar_w, bar_h, 40, 40, 45, 255, 0, true, 3)
+        render.draw_rectangle(bar_x, bar_y, bar_w * pct, bar_h, icon_col[1], icon_col[2], icon_col[3], 255, 0, true, 3)
+        
+
+        if c4.is_defusing then
+            local def_txt = c4.can_defuse and ("Defusing: " .. string.format("%.1f", c4.defuse_left) .. "s") or "NO TIME!"
+            local d_col = c4.can_defuse and {150, 255, 150} or {255, 100, 100}
+            render.draw_text(Menu.fonts.main, def_txt, bx + 12, by + 42, d_col[1], d_col[2], d_col[3], 255, 0,0,0,0,0)
+            
+            local dpct = math.clamp(1 - (c4.defuse_left / c4.defuse_max), 0, 1)
+            render.draw_rectangle(bar_x, by+58, bar_w, bar_h, 40, 40, 45, 255, 0, true, 3)
+            render.draw_rectangle(bar_x, by+58, bar_w * dpct, bar_h, d_col[1], d_col[2], d_col[3], 255, 0, true, 3)
+        end
+    end
+end
+local function draw_cham_segment(p1, p2, radius, r, g, b, a, outline_r, outline_g, outline_b, outline_a)
+    local dx = p2.x - p1.x
+    local dy = p2.y - p1.y
+    local len = math.sqrt(dx*dx + dy*dy)
+
+    if len <= 0 then return end
+
+    local nx = -dy / len
+    local ny = dx / len
+
+    local outline_radius = radius + 2.0 
+    local ox_o = nx * outline_radius
+    local oy_o = ny * outline_radius
+
+    local points_outline = {
+        p1.x + ox_o, p1.y + oy_o,
+        p2.x + ox_o, p2.y + oy_o,
+        p2.x - ox_o, p2.y - oy_o,
+        p1.x - ox_o, p1.y - oy_o
+    }
+    
+    render.draw_polygon(points_outline, outline_r, outline_g, outline_b, outline_a, 0, true)
+    render.draw_circle(p1.x, p1.y, outline_radius, outline_r, outline_g, outline_b, outline_a, 0, true)
+    render.draw_circle(p2.x, p2.y, outline_radius, outline_r, outline_g, outline_b, outline_a, 0, true)
+
+    local ox = nx * radius
+    local oy = ny * radius
+
+    local points_fill = {
+        p1.x + ox, p1.y + oy,
+        p2.x + ox, p2.y + oy,
+        p2.x - ox, p2.y - oy,
+        p1.x - ox, p1.y - oy
+    }
+
+    render.draw_polygon(points_fill, r, g, b, a, 0, true)
+    render.draw_circle(p1.x, p1.y, radius, r, g, b, a, 0, true)
+    render.draw_circle(p2.x, p2.y, radius, r, g, b, a, 0, true)
+end
+
+function draw_external_chams_body(bones_2d, scale, fill_color, outline_color)
+    local r, g, b, a = table.unpack(fill_color)
+    local or_, og, ob, oa = table.unpack(outline_color)
+
+    local base = 5.5 * scale 
+
+    local connections = {
+        {"pelvis",  "spine_1", 3.8}, 
+        {"spine_1", "spine_2", 4.0}, 
+        {"spine_2", "spine_3", 4.2}, 
+        {"spine_3", "neck",    3.0}, 
+        {"neck",    "head",    3.5},
+        {"spine_3", "clavicle_L", 2.5}, {"spine_3", "clavicle_R", 2.5},
+        {"clavicle_L", "arm_upper_L", 2.2}, {"arm_upper_L", "arm_lower_L", 1.9}, {"arm_lower_L", "hand_L", 1.6},
+        {"clavicle_R", "arm_upper_R", 2.2}, {"arm_upper_R", "arm_lower_R", 1.9}, {"arm_lower_R", "hand_R", 1.6},
+        {"pelvis", "leg_upper_L", 3.2}, {"leg_upper_L", "leg_lower_L", 2.6}, {"leg_lower_L", "ankle_L", 2.0},
+        {"pelvis", "leg_upper_R", 3.2}, {"leg_upper_R", "leg_lower_R", 2.6}, {"leg_lower_R", "ankle_R", 2.0},
+    }
+
+    for _, bond in ipairs(connections) do
+        local p1 = bones_2d[bond[1]]
+        local p2 = bones_2d[bond[2]]
+        if p1 and p2 then
+            draw_cham_segment(p1, p2, base * bond[3], r, g, b, a, or_, og, ob, oa)
+        end
+    end
+end
 
 MainGameLoop = function()
     local is_design_mode = MenuLib.get_value("design_mode")
-
+local cmd = { buttons = 0, view_angles_mod = nil }
     if not proc.is_attached() or proc.did_exit() then return end
 
     local client_dll = proc.find_module("client.dll")
@@ -5110,6 +6083,32 @@ MainGameLoop = function()
                             local team = proc.read_int32(entity_pawn + offsets.m_iTeamNum)
                             
                             local is_enemy = (team ~= local_team)
+
+
+
+if is_enemy and MenuLib.get_value("esp_oof_arrows") then
+    local game_scene_node = proc.read_int64(entity_pawn + offsets.m_pGameSceneNode)
+    local entity_pos = vec3.read_float(game_scene_node + offsets.m_vecAbsOrigin)
+    local scr_w, scr_h = render.get_viewport_size()
+    
+    local screen_pos = world_to_screen(view_matrix, entity_pos)
+    
+    if not screen_pos or screen_pos.x < 0 or screen_pos.x > scr_w or screen_pos.y < 0 or screen_pos.y > scr_h then
+        local view_angles = vec3.read_float(client_dll + offsets.dwViewAngles)
+        
+        draw_oof_arrow(view_angles.y, entity_pos, local_origin)
+    end
+end
+
+                             if is_enemy then
+                local chams_on = MenuLib.get_value("esp_chams_enemy")
+                local chams_col = MenuLib.get_value("esp_chams_color_enemy")
+                UpdateChams(entity_pawn, chams_col, chams_on)
+            else
+                local chams_on = MenuLib.get_value("team_chams_enabled")
+                local chams_col = MenuLib.get_value("team_chams_color")
+                UpdateChams(entity_pawn, chams_col, chams_on)
+            end
                             local should_draw = false
                             local prefix = ""
 
@@ -5123,64 +6122,99 @@ MainGameLoop = function()
                                 local game_scene_node = proc.read_int64(entity_pawn + offsets.m_pGameSceneNode)
                                 local bone_array_ptr = proc.read_int64(game_scene_node + offsets.m_modelState + offsets.m_boneArray)
                                 
-                                if bone_array_ptr ~= 0 then
-                                    local head_pos_3d = vec3.read_float(bone_array_ptr + BONE_MAP.head * 32)
-                                    local origin_3d = vec3.read_float(game_scene_node + offsets.m_vecAbsOrigin)
-                                    
-                                    local head_top_3d = vec3(head_pos_3d.x, head_pos_3d.y, head_pos_3d.z + 8.0)
-                                    local screen_pos_head = world_to_screen(view_matrix, head_top_3d)
-                                    local screen_pos_feet = world_to_screen(view_matrix, origin_3d)
+                               if bone_array_ptr ~= 0 then
+    local head_pos_3d = vec3.read_float(bone_array_ptr + BONE_MAP.head * 32)
+    local origin_3d = vec3.read_float(game_scene_node + offsets.m_vecAbsOrigin)
+    
+    -- Added height offsets
+    local head_top_3d = vec3(head_pos_3d.x, head_pos_3d.y, head_pos_3d.z + 12.0)
+    local feet_pos_3d = vec3(origin_3d.x, origin_3d.y, origin_3d.z - 3.0)
 
-                                    if screen_pos_head and screen_pos_feet then
-                                        local box_height = math.abs(screen_pos_head.y - screen_pos_feet.y)
-                                        local box_width = box_height / 2.0
-                                        
-                                        local money = -1
-                                        if MenuLib.get_value(prefix .. "_money") then
-                                            local money_services = proc.read_int64(entity_controller + offsets.m_pInGameMoneyServices)
-                                            if money_services ~= 0 then money = proc.read_int32(money_services + offsets.m_iAccount) end
-                                        end
+    local screen_pos_head = world_to_screen(view_matrix, head_top_3d)
+    local screen_pos_feet = world_to_screen(view_matrix, feet_pos_3d)
 
-                                        local entity_to_render = {
-                                            health = health, team = team,
-                                            is_scoped = proc.read_int8(entity_pawn + offsets.m_bIsScoped) > 0,     
-                                            is_flashed = proc.read_float(entity_pawn + offsets.m_flFlashDuration) > 0, 
-                                            distance = get_distance_manual(origin_3d, local_origin),
-                                            money = money, 
-                                            armor = proc.read_int32(entity_pawn + offsets.m_ArmorValue),
-                                            weapon = get_active_weapon_name(entity_pawn),
-                                            rect = {
-                                                top = screen_pos_head.y, bottom = screen_pos_feet.y,
-                                                left = screen_pos_head.x - (box_width / 2), right = screen_pos_head.x + (box_width / 2)
-                                            },
-                                            name = proc.read_string(proc.read_int64(entity_controller + offsets.m_sSanitizedPlayerName), 64)
-                                        }
-                                        
-                                        render_entity_info(entity_to_render, prefix)
-                                        
-                                        local skeleton_mode = MenuLib.get_value(prefix .. "_skeleton_mode")
-                                        if skeleton_mode > 1 then
-                                             local bones_2d = {}
-                                             for name, index in pairs(BONE_MAP) do
-                                                 local bone_3d = vec3.read_float(bone_array_ptr + index * 32)
-                                                 if bone_3d then 
-                                                     bones_2d[name] = world_to_screen(view_matrix, bone_3d) 
-                                                 end
-                                             end
-                                             
-                                             local skel_color = MenuLib.get_value(prefix .. "_skeleton_color") or {255, 255, 255, 255}
+    -- [FIX] Only proceed if positions are on screen
+    if screen_pos_head and screen_pos_feet then
+        
+        -- [FIX] Define box_height HERE before using it
+        local box_height = math.abs(screen_pos_head.y - screen_pos_feet.y)
+        local box_width = box_height * 0.55
+        local box_center_x = (screen_pos_head.x + screen_pos_feet.x) / 2.0
 
-                                             if skeleton_mode == 2 then 
-                                                 draw_skeleton(bones_2d, skel_color)
-                                             elseif skeleton_mode == 3 then
-                                                draw_circular_skeleton(bones_2d, 1.0, skel_color)
-                                             elseif skeleton_mode == 4 then
-                                                local scale = math.max(0.1, box_height / 300.0)
-                                                draw_capsule_skeleton(bones_2d, scale, skel_color)
-                                             end
-                                        end
-                                    end
-                                end
+        -- [[ EXTERNAL CHAMS LOGIC (Now placed safely inside the check) ]]
+        local chams_enabled_key = (prefix == "esp") and "esp_ext_chams_enemy" or "team_ext_chams"
+        local fill_col_key = (prefix == "esp") and "esp_ext_chams_fill_enemy" or "team_ext_chams_fill"
+        local out_col_key = (prefix == "esp") and "esp_ext_chams_out_enemy" or "team_ext_chams_out"
+
+        if MenuLib.get_value(chams_enabled_key) then
+            local fill_col = MenuLib.get_value(fill_col_key) or {255, 100, 100, 255}
+            local out_col = MenuLib.get_value(out_col_key) or {255, 255, 255, 255}
+
+            local bones_2d = {}
+            for name, index in pairs(BONE_MAP) do
+                local bone_3d = vec3.read_float(bone_array_ptr + index * 32)
+                if bone_3d then 
+                    bones_2d[name] = world_to_screen(view_matrix, bone_3d) 
+                end
+            end
+
+            -- box_height is now valid here
+            local b_scale = math.max(0.1, box_height / 300.0)
+
+            draw_external_chams_body(bones_2d, b_scale, fill_col, out_col)
+        end
+        -- [[ END CHAMS ]]
+
+        local money = -1
+        if MenuLib.get_value(prefix .. "_money") then
+            local money_services = proc.read_int64(entity_controller + offsets.m_pInGameMoneyServices)
+            if money_services ~= 0 then money = proc.read_int32(money_services + offsets.m_iAccount) end
+        end
+
+        local entity_to_render = {
+            health = health, 
+            team = team,
+            is_scoped = proc.read_int8(entity_pawn + offsets.m_bIsScoped) > 0,     
+            is_flashed = proc.read_float(entity_pawn + offsets.m_flFlashDuration) > 0, 
+            distance = get_distance_manual(origin_3d, local_origin) / 39.37, 
+            money = money, 
+            armor = proc.read_int32(entity_pawn + offsets.m_ArmorValue),
+            weapon = get_active_weapon_name(entity_pawn),
+            rect = {
+                top = math.min(screen_pos_head.y, screen_pos_feet.y), 
+                bottom = math.max(screen_pos_head.y, screen_pos_feet.y),
+                left = box_center_x - (box_width / 2.0), 
+                right = box_center_x + (box_width / 2.0)
+            },
+            name = proc.read_string(proc.read_int64(entity_controller + offsets.m_sSanitizedPlayerName), 64),
+            has_c4 = (_G.C4_Carrier_Handle ~= 0 and pawn_handle == _G.C4_Carrier_Handle)
+        }
+        
+        render_entity_info(entity_to_render, prefix)
+        
+        local skeleton_mode = MenuLib.get_value(prefix .. "_skeleton_mode")
+        if skeleton_mode > 1 then
+                local bones_2d = {}
+                for name, index in pairs(BONE_MAP) do
+                    local bone_3d = vec3.read_float(bone_array_ptr + index * 32)
+                    if bone_3d then 
+                        bones_2d[name] = world_to_screen(view_matrix, bone_3d) 
+                    end
+                end
+                
+                local skel_color = MenuLib.get_value(prefix .. "_skeleton_color") or {255, 255, 255, 255}
+
+                if skeleton_mode == 2 then 
+                    draw_skeleton(bones_2d, skel_color)
+                elseif skeleton_mode == 3 then
+                draw_circular_skeleton(bones_2d, 1.0, skel_color)
+                elseif skeleton_mode == 4 then
+                local scale = math.max(0.1, box_height / 300.0)
+                draw_capsule_skeleton(bones_2d, scale, skel_color)
+                end
+        end
+    end
+end
                             end
                         end
                     end
@@ -5222,26 +6256,29 @@ function world_to_screen(view_matrix, position)
 end
 
 function get_active_weapon_name(entity_pawn)
-    if not entity_pawn or entity_pawn == 0 then return "UNKNOWN" end
+    local status, result = pcall(function()
+        if not entity_pawn or entity_pawn == 0 then return "UNKNOWN" end
 
-    local clipping_weapon_ptr = proc.read_int64(entity_pawn + offsets.m_pClippingWeapon)
-    if not clipping_weapon_ptr or clipping_weapon_ptr == 0 then return "UNKNOWN" end
+        local clipping_weapon_ptr = proc.read_int64(entity_pawn + offsets.m_pClippingWeapon)
+        if not clipping_weapon_ptr or clipping_weapon_ptr == 0 then return "UNKNOWN" end
 
-    local item_definition_ptr = proc.read_int64(clipping_weapon_ptr + 0x10)
-    if not item_definition_ptr or item_definition_ptr == 0 then return "UNKNOWN" end
-    
-    local designer_name_ptr = proc.read_int64(item_definition_ptr + 0x20)
-    if not designer_name_ptr or designer_name_ptr == 0 then return "UNKNOWN" end
+        local item_definition_ptr = proc.read_int64(clipping_weapon_ptr + 0x10)
+        if not item_definition_ptr or item_definition_ptr == 0 then return "UNKNOWN" end
+        
+        local designer_name_ptr = proc.read_int64(item_definition_ptr + 0x20)
+        if not designer_name_ptr or designer_name_ptr == 0 then return "UNKNOWN" end
 
-    local weapon_name_raw = proc.read_string(designer_name_ptr, 40)
-    if not weapon_name_raw or weapon_name_raw == "" then return "UNKNOWN" end
-    
-    local _, _, weapon_name = string.find(weapon_name_raw, "weapon_(.+)")
-    if weapon_name then
-        return string.upper(weapon_name) 
-    end
-    
-    return "WEAPON"
+        local weapon_name_raw = proc.read_string(designer_name_ptr, 40)
+        if not weapon_name_raw or weapon_name_raw == "" then return "UNKNOWN" end
+        
+        local _, _, weapon_name = string.find(weapon_name_raw, "weapon_(.+)")
+        if weapon_name then
+            return string.upper(weapon_name) 
+        end
+        return "WEAPON"
+    end)
+
+    if status then return result else return "UNKNOWN" end
 end
 
 
@@ -5484,135 +6521,199 @@ end
 
 
 
-function render_entity_info(entity, prefix)
+function render_entity_info(entity, prefix, is_preview)
     local rect = entity.rect
-    local box_height = rect.bottom - rect.top
-    if box_height <= 2 then return end
-
-    local box_width = rect.right - rect.left
-    local box_center_x = rect.left + (box_width / 2)
+    local h = rect.bottom - rect.top
+    if h <= 2 then return end
+    local w = rect.right - rect.left
+    local cx, cy = rect.left + (w/2), rect.top + (h/2)
+    local scale = h / 300.0
     
-    local bar_width = 4
-    local bar_padding = 5
+    local default_col = {255, 255, 255, 255}
+    local is_box = MenuLib.get_value(prefix .. "_box")
     local font_main = esp_fonts.name or Menu.fonts.group
     local font_small = esp_fonts.weapon or Menu.fonts.main
-    local default_col = {255, 255, 255, 255}
 
-    local is_box = MenuLib.get_value(prefix .. "_box")
-    local is_name = MenuLib.get_value(prefix .. "_name")
-    local is_health = MenuLib.get_value(prefix .. "_health")
-    local is_armor = MenuLib.get_value(prefix .. "_armor")
-    local is_weapon = MenuLib.get_value(prefix .. "_player_weapon") or MenuLib.get_value(prefix .. "_weapon")
-    local is_money = MenuLib.get_value(prefix .. "_money")
-    local is_dist = MenuLib.get_value(prefix .. "_distance")
-
+    -- [[ 1. BOX RENDERING ]]
     if is_box then
-        local col = MenuLib.get_value(prefix .. "_box_color") or default_col
-        local r, g, b, a = math.floor(col[1]), math.floor(col[2]), math.floor(col[3]), math.floor(col[4])
-        local box_type = MenuLib.get_value(prefix .. "_box_type")
+        local col = MenuLib.get_value(prefix.."_box_color") or default_col
+        local bt = MenuLib.get_value(prefix.."_box_type")
+        local r,g,b,a = col[1],col[2],col[3],col[4]
 
-        if box_type == 2 then 
-            local len = math.max(8, box_height * 0.18)
-            local function corner_line(x1, y1, x2, y2)
-                render.draw_line(x1, y1, x2, y2, 0, 0, 0, a, 3) 
-                render.draw_line(x1, y1, x2, y2, r, g, b, a, 1) 
-            end
-            
-            corner_line(rect.left, rect.top, rect.left + len, rect.top)
-            corner_line(rect.left, rect.top, rect.left, rect.top + len)
-            corner_line(rect.right, rect.top, rect.right - len, rect.top)
-            corner_line(rect.right, rect.top, rect.right, rect.top + len)
-            corner_line(rect.left, rect.bottom, rect.left + len, rect.bottom)
-            corner_line(rect.left, rect.bottom, rect.left, rect.bottom - len)
-            corner_line(rect.right, rect.bottom, rect.right - len, rect.bottom)
-            corner_line(rect.right, rect.bottom, rect.right, rect.bottom - len)
+        if bt == 2 then -- Corner
+            local L = math.max(6, h*0.2)
+            local function c(x1,y1,x2,y2) render.draw_line(x1,y1,x2,y2,0,0,0,a*0.8,3); render.draw_line(x1,y1,x2,y2,r,g,b,a,1) end
+            c(rect.left,rect.top, rect.left+L,rect.top); c(rect.left,rect.top, rect.left,rect.top+L)
+            c(rect.right,rect.top, rect.right-L,rect.top); c(rect.right,rect.top, rect.right,rect.top+L)
+            c(rect.left,rect.bottom, rect.left+L,rect.bottom); c(rect.left,rect.bottom, rect.left,rect.bottom-L)
+            c(rect.right,rect.bottom, rect.right-L,rect.bottom); c(rect.right,rect.bottom, rect.right,rect.bottom-L)
+        elseif bt == 3 then -- Filled
+             render.draw_gradient_rectangle(rect.left,rect.top,w,h,{{r,g,b,0},{r,g,b,math.floor(a*0.3)}},0)
+             render.draw_rectangle(rect.left-1,rect.top-1,w+2,h+2,0,0,0,a,1,false)
+             render.draw_rectangle(rect.left,rect.top,w,h,r,g,b,a,1,false)
+        else -- Standard
+             render.draw_rectangle(rect.left-1,rect.top-1,w+2,h+2,0,0,0,a*0.8,1,false)
+             render.draw_rectangle(rect.left+1,rect.top+1,w-2,h-2,0,0,0,a*0.8,1,false)
+             render.draw_rectangle(rect.left,rect.top,w,h,r,g,b,a,1,false)
+        end
+    end
 
-        elseif box_type == 3 then
-            draw_filled_box(rect, r, g, b, a)
+    local bar_padding = { l=0, r=0, t=0, b=0 }
+    
+    local function get_layout_side(id)
+        local off = LayoutState.offsets[id] or {x=0, y=0}
+        if math.abs(off.x)*1.4 > math.abs(off.y) then
+            return (off.x < 0) and "left" or "right"
         else
-            render.draw_rectangle(rect.left - 1, rect.top - 1, box_width + 2, box_height + 2, 0, 0, 0, a * 0.8, 1, false)
-            render.draw_rectangle(rect.left + 1, rect.top + 1, box_width - 2, box_height - 2, 0, 0, 0, a * 0.8, 1, false)
-            render.draw_rectangle(rect.left, rect.top, box_width, box_height, r, g, b, a, 1, false)
+            return (off.y < 0) and "top" or "bottom"
         end
     end
 
-    if is_name and entity.name then
-        local col = MenuLib.get_value(prefix .. "_name_color") or default_col
-        local tw, th = render.measure_text(font_main, entity.name)
+    -- [[ 2. DRAW BARS ]]
+    local function process_bar(id, val, max, col)
+        if not MenuLib.get_value(prefix .. "_" .. id) then return end
+        local side = get_layout_side(id)
+        local pct = math.clamp(val / max, 0, 1)
         
-        render.draw_text(font_main, entity.name, box_center_x - tw/2 + 1, rect.top - th - 3, 0, 0, 0, col[4], 0,0,0,0,0)
-        render.draw_text(font_main, entity.name, box_center_x - tw/2, rect.top - th - 4, col[1], col[2], col[3], col[4], 0,0,0,0,0)
+        local bw, bh, bx, by = 0,0,0,0
+        local orient = "vertical"
+        local thickness = 4
+        local gap = 4
+
+        if side == "left" then
+            bw, bh = thickness, h
+            bx = rect.left - gap - bar_padding.l - bw
+            by = rect.top
+            bar_padding.l = bar_padding.l + bw + 2
+            orient = "vertical"
+        elseif side == "right" then
+            bw, bh = thickness, h
+            bx = rect.right + gap + bar_padding.r
+            by = rect.top
+            bar_padding.r = bar_padding.r + bw + 2
+            orient = "vertical"
+        elseif side == "bottom" then
+            bw, bh = w, thickness
+            bx = rect.left
+            by = rect.bottom + gap + bar_padding.b
+            bar_padding.b = bar_padding.b + bh + 2
+            orient = "horizontal"
+        elseif side == "top" then
+            bw, bh = w, thickness
+            bx = rect.left
+            by = rect.top - gap - bar_padding.t - bh
+            bar_padding.t = bar_padding.t + bh + 2
+            orient = "horizontal"
+        end
+
+        draw_shook_style_bar(bx, by, bw, bh, pct, col, orient)
+        
+        if is_preview then
+             table.insert(LayoutState.hitboxes, {id=id, x=bx-4, y=by-4, w=bw+8, h=bh+8})
+             local mx,my = input.get_mouse_position()
+             local hover = mx>=(bx-4) and mx<=(bx+bw+4) and my>=(by-4) and my<=(by+bh+4)
+             if LayoutState.dragging_id==id or hover then
+                  local alpha = hover and 200 or 100
+                  if LayoutState.dragging_id==id then alpha = 255 end
+                  render.draw_rectangle(bx-2, by-2, bw+4, bh+4, 100, 255, 100, alpha, 1, false)
+             end
+        end
+    end
+    
+    if MenuLib.get_value(prefix.."_health") then
+        local hp = entity.health or 100
+        local r, g = math.floor((100 - hp) * 2.55), math.floor(hp * 2.55)
+        process_bar("health", hp, 100, {r, g, 0, 255})
+    end
+    if MenuLib.get_value(prefix.."_armor") then
+        process_bar("armor", entity.armor or 0, 100, {0, 140, 255, 255})
     end
 
-    local cur_left_offset = rect.left - bar_padding - bar_width
+    -- [[ 3. TEXT STACKING ]]
+    local text_groups = { top={}, bottom={}, left={}, right={} }
+
+    local function queue_text(id, txt, col)
+        -- 'c4_carrier' uses the checkbox 'esp_c4_carrier', others construct ID
+        local check_id = (id == "c4_carrier") and "c4_carrier" or id
+        local key = prefix .. (check_id == "weapon" and "_player_weapon" or "_" .. check_id)
+        
+        if id == "flags" then key = nil end -- Standard flags logic bypass
+        
+        if key and not MenuLib.get_value(key) then return end
+        
+        local s = get_layout_side(id)
+        local off = LayoutState.offsets[id] or {x=0,y=0}
+
+        table.insert(text_groups[s], {id=id, text=txt, col=col, y_order=off.y})
+    end
     
-    if is_health ~= false then
-        local hp_color = {
-            math.floor((100 - entity.health) * 2.55),
-            math.floor(entity.health * 2.55),      
-            0, 255
-        }
-        
-        draw_shook_gradient_bar(cur_left_offset, rect.top, bar_width, box_height, entity.health, 100, hp_color, true)
-        
-        if entity.health < 98 then
-            local hp_str = tostring(entity.health)
-            local htw, hth = render.measure_text(font_small, hp_str)
-            local text_y = rect.top + (box_height * (1 - entity.health/100)) - (hth/2)
+    -- Queue Normal Text
+    if entity.name then queue_text("name", entity.name, MenuLib.get_value(prefix.."_name_color")or default_col) end
+    if entity.weapon then queue_text("weapon", entity.weapon, default_col) end
+    if MenuLib.get_value(prefix.."_distance") then 
+        local dc=MenuLib.get_value(prefix.."_distance_color")or default_col
+        queue_text("distance", math.floor(entity.distance).."m", dc)
+    end
+    if MenuLib.get_value(prefix.."_money") and entity.money then
+        local mc=MenuLib.get_value(prefix.."_money_color")or{110,255,110,255}
+        queue_text("money", "$"..entity.money, mc) 
+    end
+
+    -- Standard Flags (Scoped / Flashed)
+    local fs=""
+    if entity.is_scoped and MenuLib.get_value(prefix.."_scoped_flag") then fs="ZOOM" end
+    if entity.is_flashed and MenuLib.get_value(prefix.."_flashed_flag") then fs=fs..((fs~="" and "\n" or "").."BLIND") end
+    if fs~="" then queue_text("flags", fs, {255,200,50,255}) end
+
+    if entity.has_c4 then 
+        queue_text("c4_carrier", "C4", {255, 50, 50, 255})
+    end
+
+    -- Draw Stacks
+    for side, items in pairs(text_groups) do
+        if #items > 0 then
+            table.sort(items, function(a,b) return a.y_order < b.y_order end)
+            local offset_stack = 0
             
-            if text_y < rect.top then text_y = rect.top end
-            if text_y > rect.bottom - hth then text_y = rect.bottom - hth end
+            local ax, ay = 0, 0
+            if side=="top" then ay=rect.top - bar_padding.t - 2 
+            elseif side=="bottom" then ay=rect.bottom + bar_padding.b + 4
+            elseif side=="left" then ax=rect.left - bar_padding.l - 4
+            elseif side=="right" then ax=rect.right + bar_padding.r + 4 end
 
-            render.draw_text(font_small, hp_str, cur_left_offset - htw - 2, text_y, 255, 255, 255, 255, 1, 0,0,0,150)
+            for _, itm in ipairs(items) do
+                for line in string.gmatch(itm.text.."\n", "(.-)\n") do
+                    if line~="" then
+                        local tw, th = render.measure_text(font_small, line)
+                        local tx, ty = 0, 0
+                        
+                        if side=="top" then
+                             tx=cx-tw/2; ty=ay - offset_stack - th
+                             offset_stack = offset_stack + th + 2
+                        elseif side=="bottom" then
+                             tx=cx-tw/2; ty=ay + offset_stack
+                             offset_stack = offset_stack + th + 2
+                        elseif side=="left" then
+                             tx=ax-tw; ty=rect.top + offset_stack
+                             offset_stack = offset_stack + th
+                        elseif side=="right" then
+                             tx=ax; ty=rect.top + offset_stack
+                             offset_stack = offset_stack + th
+                        end
+                        
+                        render.draw_text(font_small, line, tx+1, ty+1, 0,0,0,180, 0,0,0,0,0)
+                        render.draw_text(font_small, line, tx, ty, itm.col[1],itm.col[2],itm.col[3],itm.col[4], 0,0,0,0,0)
+
+                        if is_preview then
+                             table.insert(LayoutState.hitboxes, {id=itm.id, x=tx, y=ty, w=tw, h=th})
+                             if LayoutState.dragging_id == itm.id then
+                                render.draw_rectangle(tx-2, ty-1, tw+4, th+2, 0,255,0,50, 1, false)
+                             end
+                        end
+                    end
+                end
+            end
         end
-        cur_left_offset = cur_left_offset - 6 
-    end
-
-    local cur_bot_y = rect.bottom + 4
-
-    if is_armor and entity.armor and entity.armor > 0 then
-        local armor_col = {0, 140, 255, 255} 
-        local arm_height = 3
-        draw_shook_gradient_bar(rect.left, cur_bot_y, box_width, arm_height, entity.armor, 100, armor_col, false)
-        cur_bot_y = cur_bot_y + arm_height + 3
-    end
-
-    if is_weapon and entity.weapon then
-        local w_name = entity.weapon
-        if w_name ~= "UNKNOWN" and w_name ~= "" then
-            local tw, th = render.measure_text(font_small, w_name)
-            render.draw_text(font_small, w_name, box_center_x - tw/2, cur_bot_y, 230, 230, 230, 255, 1, 0,0,0,180)
-            cur_bot_y = cur_bot_y + th
-        end
-    end
-
-    if is_dist then
-        local dist_str = math.floor(entity.distance) .. "m"
-        local col = MenuLib.get_value(prefix .. "_distance_color") or default_col
-        local tw, th = render.measure_text(font_small, dist_str)
-        
-        render.draw_text(font_small, dist_str, box_center_x - tw/2, cur_bot_y, col[1], col[2], col[3], col[4], 1, 0,0,0,100)
-    end
-
-    local flags_x = rect.right + bar_padding
-    local flags_y = rect.top
-    
-    local function add_flag(text, r, g, b)
-        local tw, th = render.measure_text(font_small, text)
-        render.draw_text(font_small, text, flags_x, flags_y, r, g, b, 255, 1, 0,0,0,180)
-        flags_y = flags_y + th
-    end
-
-    if is_money and entity.money then 
-        add_flag("$" .. entity.money, 130, 235, 130) 
-    end
-    
-    if entity.is_scoped and MenuLib.get_value(prefix .. "_scoped_flag") then 
-        add_flag("ZOOM", 130, 200, 255) 
-    end
-    
-    if entity.is_flashed and MenuLib.get_value(prefix .. "_flashed_flag") then 
-        add_flag("BLIND", 255, 230, 80) 
     end
 end
 
@@ -5665,8 +6766,11 @@ local function read_vec3(address)
     }
 end
 
+local C4_DEF_INDEX = 49
+
 local function update_data()
     g.entities = {}
+    g.c4 = nil 
 
     if not g.client_module then g.client_module = proc.find_module("client.dll") end
     if not g.client_module or g.client_module == 0 then return end
@@ -5677,45 +6781,116 @@ local function update_data()
     local local_team = proc.read_int32(lpawn_addr + offsets.m_iTeamNum)
     local local_pos_vec = read_vec3(lpawn_addr + offsets.m_vOldOrigin)
     g.local_pos = {x = local_pos_vec.x, y = local_pos_vec.y}
-    g.local_yaw = proc.read_float(g.client_module + offsets.dwViewAngles + 4)
+    g.local_yaw = proc.read_float(g.client_module + offsets.dwViewAngles + 4) 
     
     local entity_list_addr = proc.read_int64(g.client_module + offsets.dwEntityList)
-    local lpawn_ctrl_addr = proc.read_int64(g.client_module + offsets.dwLocalPlayerController)
+    if not entity_list_addr or entity_list_addr == 0 then return end
 
-    for i = 1, 64 do
-        local entry_addr = proc.read_int64(entity_list_addr + 0x8 * (i >> 9) + 0x10)
-        if entry_addr ~= 0 then
-            local ctrl_addr = proc.read_int64(entry_addr + 112 * (i & 0x1FF))
-            if ctrl_addr ~= 0 and ctrl_addr ~= lpawn_ctrl_addr then
-                local pawn_handle = proc.read_int32(ctrl_addr + offsets.m_hPlayerPawn) & 0x7FFF
-                if pawn_handle > 0 then
-                    local pawn_entry_addr = proc.read_int64(entity_list_addr + 0x8 * (pawn_handle >> 9) + 0x10)
-                    if pawn_entry_addr ~= 0 then
-                        local pawn_addr = proc.read_int64(pawn_entry_addr + 112 * (pawn_handle & 0x1FF))
-                        if pawn_addr ~= 0 and proc.read_int32(pawn_addr + offsets.m_iHealth) > 0 and proc.read_int32(pawn_addr + offsets.m_bDormant) == 0 then
-                            local team = proc.read_int32(pawn_addr + offsets.m_iTeamNum)
-                            local pos = read_vec3(pawn_addr + offsets.m_vOldOrigin)
-                            
-                            -- Read Name
-                            local name_ptr = proc.read_int64(ctrl_addr + offsets.m_sSanitizedPlayerName)
-                            local player_name = proc.read_string(name_ptr, 32)
-                            if not player_name or player_name == "" then player_name = "Enemy" end
+    local planted_ptr = proc.read_int64(g.client_module + offsets.dwPlantedC4)
+    
+    if planted_ptr and planted_ptr > 0 then
+        local planted_ent = proc.read_int64(planted_ptr)
+        if planted_ent and planted_ent > 0 then
+            
+            local blow_time = proc.read_float(planted_ent + offsets.m_flC4Blow)
+            local is_defused = proc.read_int8(planted_ent + offsets.m_bBombDefused) == 1
+            
+            local global_vars = proc.read_int64(g.client_module + offsets.dwGlobalVars)
+            local server_time = 0
+            if global_vars and global_vars > 0 then
+                server_time = proc.read_float(global_vars + 0x2C)
+            end
+            
 
-                            local color = (team ~= local_team) and radar.enemy_color or radar.team_color
-                            
-                            -- Store pawn_addr for yaw reading later
-                            table.insert(g.entities, {
-                                pos = {x=pos.x, y=pos.y}, 
-                                pawn_address = pawn_addr,
-                                color = color,
-                                team = team,
-                                name = player_name
-                            })
+            local is_active = (blow_time > (server_time - 2.0)) and not is_defused
+
+            if is_active then
+                local scene = proc.read_int64(planted_ent + offsets.m_pGameSceneNode)
+                if scene and scene > 0 then
+                    local pos = read_vec3(scene + offsets.m_vecAbsOrigin)
+                    if math.abs(pos.x) > 1 then
+                        g.c4 = { pos = pos, type = "planted" }
+                    end
+                end
+            end
+        end
+    end
+
+    if not g.c4 then
+        for i = 64, 1024 do
+            local entry_addr = proc.read_int64(entity_list_addr + 0x8 * ((i >> 9) & 0x7FFF) + 0x10)
+            if entry_addr and entry_addr > 0 then
+                local entity = proc.read_int64(entry_addr + 112 * (i & 0x1FF))
+                if entity and entity > 0 then
+                    local owner = proc.read_int32(entity + offsets.m_hOwnerEntity)
+                    if owner == -1 then 
+                        local attr_mgr = entity + offsets.m_AttributeManager
+                        local item = attr_mgr + offsets.m_Item
+                        local def_index = proc.read_int16(item + offsets.m_iItemDefinitionIndex)
+                        
+                        if def_index == C4_DEF_INDEX then
+                            local scene = proc.read_int64(entity + offsets.m_pGameSceneNode)
+                            if scene and scene > 0 then
+                                local pos = read_vec3(scene + offsets.m_vecAbsOrigin)
+                                if math.abs(pos.x) > 1 then
+                                    g.c4 = { pos = pos, type = "dropped" }
+                                    break
+                                end
+                            end
                         end
                     end
                 end
             end
         end
+    end
+
+    local lpawn_ctrl_addr = proc.read_int64(g.client_module + offsets.dwLocalPlayerController)
+    
+    for i = 1, 64 do
+        pcall(function()
+            local entry_addr = proc.read_int64(entity_list_addr + 0x8 * (i >> 9) + 0x10)
+            if entry_addr ~= 0 then
+                local ctrl_addr = proc.read_int64(entry_addr + 112 * (i & 0x1FF))
+                if ctrl_addr ~= 0 and ctrl_addr ~= lpawn_ctrl_addr then
+                    local pawn_handle = proc.read_int32(ctrl_addr + offsets.m_hPlayerPawn)
+                    if pawn_handle and pawn_handle > 0 and (pawn_handle & 0x7FFF) > 0 then
+                        local masked_h = pawn_handle & 0x7FFF
+                        local pawn_entry_addr = proc.read_int64(entity_list_addr + 0x8 * (masked_h >> 9) + 0x10)
+                        
+                        if pawn_entry_addr ~= 0 then
+                            local pawn_addr = proc.read_int64(pawn_entry_addr + 112 * (masked_h & 0x1FF))
+                            if pawn_addr ~= 0 then
+                                local hp = proc.read_int32(pawn_addr + offsets.m_iHealth)
+                                if hp > 0 then
+                                    local team = proc.read_int32(pawn_addr + offsets.m_iTeamNum)
+                                    local pos = read_vec3(pawn_addr + offsets.m_vOldOrigin)
+                                    
+                                    -- READ NAME
+                                    local name_str = nil
+                                    local name_addr = proc.read_int64(ctrl_addr + offsets.m_sSanitizedPlayerName)
+                                    if name_addr ~= 0 then
+                                        name_str = proc.read_string(name_addr, 32)
+                                    end
+                                    
+                                    local color = (team ~= local_team) and radar.enemy_color or radar.team_color
+
+                                    local is_carrying_c4 = (_G.C4_Carrier_Handle ~= 0 and pawn_handle == _G.C4_Carrier_Handle)
+                                    
+                                    table.insert(g.entities, {
+                                        pos = {x=pos.x, y=pos.y}, 
+                                        pawn_address = pawn_addr,
+                                        color = color,
+                                        team = team,
+                                        name = name_str,
+                                        has_c4 = is_carrying_c4
+                                    })
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
     end
 end
 
@@ -5734,7 +6909,6 @@ local function draw_modern_radar(game)
     local cx, cy = x + (size / 2), y + (size / 2)
     local r_radius = (size / 2) - 3 
 
-    -- Drag Logic
     local mx, my = input.get_mouse_position()
     if Menu.visible then 
         local hov = mx > x and mx < x + size and my > y and my < y + size
@@ -5749,24 +6923,21 @@ local function draw_modern_radar(game)
         end
     end
 
-    -- Background
     render.draw_rectangle(x, y, size, size, 22, 22, 27, 240, 0, true, 8)
     render.draw_rectangle(x, y, size, size, 70, 70, 80, 255, 1.5, false, 8)
+    
     render.draw_line(cx, y + 5, cx, y + size - 5, 255, 255, 255, 40, 1)
     render.draw_line(x + 5, cy, x + size - 5, cy, 255, 255, 255, 40, 1)
 
-    -- Local Data (Yaw/Pos)
     local l_yaw = g.local_yaw
     local rad_yaw = math.rad(l_yaw) 
     local l_pos = g.local_pos
 
-    -- Draw Center (Local Player)
     render.draw_circle(cx, cy, 3, 255, 255, 255, 255, 0, true)
 
-    -- Iterate Cached Entities (g.entities has the names now)
-    for _, ent in ipairs(g.entities) do
-        local dx = ent.pos.x - l_pos.x
-        local dy = ent.pos.y - l_pos.y
+    local function world_to_radar(wx, wy)
+        local dx = wx - l_pos.x
+        local dy = wy - l_pos.y
         
         local rot_x = dx * math.sin(rad_yaw) - dy * math.cos(rad_yaw)
         local rot_y = dx * math.cos(rad_yaw) + dy * math.sin(rad_yaw)
@@ -5775,36 +6946,78 @@ local function draw_modern_radar(game)
         local map_y = -rot_y / radar_state.scale 
 
         local dist = math.sqrt(map_x^2 + map_y^2)
+        
+        local is_clamped = false
         if dist > r_radius then
             map_x = (map_x / dist) * r_radius
             map_y = (map_y / dist) * r_radius
+            is_clamped = true
         end
 
-        local draw_x = cx + map_x
-        local draw_y = cy + map_y
+        return (cx + map_x), (cy + map_y), is_clamped
+    end
 
-        -- Direction Line if inside radar
-        if dist <= r_radius then
+    if g.c4 then
+        local bx, by, clamped = world_to_radar(g.c4.pos.x, g.c4.pos.y)
+        
+        if g.c4.type == "planted" then
+            local time = winapi.get_tickcount64() / 250
+            local alpha = (math.sin(time) > 0) and 255 or 100
+            
+            render.draw_rectangle(bx - 3, by - 3, 6, 6, 255, 50, 50, alpha, 0, true)
+            render.draw_rectangle(bx - 3, by - 3, 6, 6, 0, 0, 0, 255, 1, false)
+            if not clamped then 
+                render.draw_text(radar.name_font, "BOMB", bx - 10, by - 12, 255, 100, 100, 255, 0,0,0,0,0)
+            end
+        else
+            render.draw_circle(bx, by, 3, 255, 255, 0, 255, 0, true)
+            render.draw_circle(bx, by, 4, 0, 0, 0, 200, 1, false)
+            if not clamped then 
+                render.draw_text(radar.name_font, "C4", bx - 6, by - 12, 255, 255, 200, 255, 0,0,0,0,0)
+            end
+        end
+    end
+
+    for _, ent in ipairs(g.entities) do
+        local rx, ry, is_clamped = world_to_radar(ent.pos.x, ent.pos.y)
+        
+        local r, g_val, b = table.unpack(ent.color)
+
+        if ent.has_c4 then
+            r, g_val, b = 255, 180, 0 
+            
+            render.draw_circle(rx, ry, 6, r, g_val, b, 255, 0, true) 
+            render.draw_circle(rx, ry, 7, 0, 0, 0, 255, 1, false) 
+            
+            if not is_clamped then
+                render.draw_text(radar.name_font, "BOMB", rx + 5, ry - 14, 255, 200, 100, 255, 1.0,0,0,0,150)
+            end
+        end
+
+        if not is_clamped then
             local ent_yaw = proc.read_float(ent.pawn_address + offsets.m_angEyeAngles + 4) 
-            if not ent_yaw or ent_yaw == 0 then ent_yaw = 0 end
+            if not ent_yaw then ent_yaw = 0 end
             
             local relative_yaw = math.rad(ent_yaw - l_yaw - 90) 
-            local dir_len = 12
-            local lx = draw_x + math.cos(relative_yaw) * dir_len
-            local ly = draw_y + math.sin(relative_yaw) * dir_len
+            local line_len = 12
             
-            render.draw_line(draw_x, draw_y, lx, ly, 255, 255, 255, 150, 1)
+            local lx = rx + math.cos(relative_yaw) * line_len
+            local ly = ry + math.sin(relative_yaw) * line_len
+            
+            render.draw_line(rx, ry, lx, ly, 255, 255, 255, 180, 1)
         end
 
-        -- Draw Dot
-        local r, g_val, b = table.unpack(ent.color)
-        render.draw_circle(draw_x, draw_y, 4, r, g_val, b, 255, 0, true)
-        render.draw_circle(draw_x, draw_y, 5, 0, 0, 0, 180, 1, false)
+        if not ent.has_c4 then
+            render.draw_circle(rx, ry, 4, r, g_val, b, 255, 0, true)
+            render.draw_circle(rx, ry, 5, 0, 0, 0, 180, 1, false)
+        end
 
-        -- Draw Name
-        if ent.name then
+        if ent.name and not ent.has_c4 then 
             local tw, th = render.measure_text(radar.name_font, ent.name)
-            render.draw_text(radar.name_font, ent.name, draw_x - tw/2, draw_y - 12, 255, 255, 255, 255, 0,0,0,0,0)
+            render.draw_text(radar.name_font, ent.name, rx - tw/2, ry - 14, 255, 255, 255, 230, 0,0,0,0,0)
+        elseif ent.has_c4 and ent.name then
+            local tw, th = render.measure_text(radar.name_font, ent.name)
+            render.draw_text(radar.name_font, ent.name, rx - tw/2, ry + 6, 255, 200, 100, 230, 0,0,0,0,0)
         end
     end
 end
@@ -5868,73 +7081,67 @@ on_script_load_radar()
 
 local client_base = nil
 
-local function to_argb(r, g, b, a)
-    local clamp = function(x) return math.max(0, math.min(1, x)) end
-    r = math.floor(clamp(r) * 255)
-    g = math.floor(clamp(g) * 255)
-    b = math.floor(clamp(b) * 255)
-    a = math.floor(clamp(a) * 255)
-
-    return (a << 24) | (b << 16) | (g << 8) | r
-end
 
 function update_glow()
-    if not MenuLib.get_value("esp_glow") then return end
+    local client_dll = proc.find_module("client.dll")
+    if not client_dll or client_dll == 0 then return end
     
-    local client_base = proc.find_module("client.dll")
-    if not client_base or client_base == 0 then return end
-    if not proc.is_attached() or proc.did_exit() then return end
-
-    local local_player = proc.read_int64(client_base + offsets.dwLocalPlayerPawn)
-    if not local_player or local_player == 0 then return end
+    local local_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
+    if not local_pawn or local_pawn == 0 then return end
     
-    local local_team_num = proc.read_int32(local_player + offsets.m_iTeamNum)
-
-    local entity_list = proc.read_int64(client_base + offsets.dwEntityList)
+    local local_team = proc.read_int32(local_pawn + offsets.m_iTeamNum)
+    local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
     if not entity_list or entity_list == 0 then return end
 
-    local ct_r, ct_g, ct_b, ct_a = table.unpack(MenuLib.get_value("esp_ct_glow_color"))
-    local t_r, t_g, t_b, t_a = table.unpack(MenuLib.get_value("esp_t_glow_color"))
+    local enemy_glow_on = MenuLib.get_value("esp_glow_enemy")
+    local enemy_glow_color = MenuLib.get_value("esp_glow_color_enemy")
+    
 
-    local ct_color = { ct_r / 255.0, ct_g / 255.0, ct_b / 255.0, ct_a / 255.0 }
-    local t_color = { t_r / 255.0, t_g / 255.0, t_b / 255.0, t_a / 255.0 }
+    local team_glow_on = false 
+    local team_glow_color = {0, 1, 0, 1}
+
+    if not enemy_glow_on and not team_glow_on then return end
 
     for i = 1, 64 do
         local list_entry = proc.read_int64(entity_list + (8 * (i & 0x7FFF) >> 9) + 16)
         if not list_entry or list_entry == 0 then goto continue_glow end
 
-        local controller_addr = proc.read_int64(list_entry + 112 * (i & 0x1FF))
-        if not controller_addr or controller_addr == 0 then goto continue_glow end
+        local controller = proc.read_int64(list_entry + 112 * (i & 0x1FF))
+        if not controller or controller == 0 then goto continue_glow end
 
-        local pawn_handle = proc.read_int32(controller_addr + offsets.m_hPlayerPawn)
-        if not pawn_handle or pawn_handle == -1 or pawn_handle == 0 then goto continue_glow end
+        local pawn_handle = proc.read_int32(controller + offsets.m_hPlayerPawn)
+        if not pawn_handle or pawn_handle == 0 then goto continue_glow end
         
-        local pawn_handle_masked = pawn_handle & 0x7FFF
-        local list_entry2 = proc.read_int64(entity_list + 0x8 * ((pawn_handle_masked >> 9) & 0x7F) + 16)
+        local list_entry2 = proc.read_int64(entity_list + 0x8 * ((pawn_handle & 0x7FFF) >> 9) + 16)
         if not list_entry2 or list_entry2 == 0 then goto continue_glow end
         
-        local pawn_addr = proc.read_int64(list_entry2 + 112 * (pawn_handle_masked & 0x1FF))
-        if not pawn_addr or pawn_addr == 0 or pawn_addr == local_player then goto continue_glow end
+        local pawn = proc.read_int64(list_entry2 + 112 * (pawn_handle & 0x1FF))
+        if not pawn or pawn == 0 or pawn == local_pawn then goto continue_glow end
 
-        local life_state = proc.read_int32(pawn_addr + offsets.m_lifeState)
-        if life_state ~= 256 then goto continue_glow end
+        if proc.read_int32(pawn + offsets.m_lifeState) ~= 256 then goto continue_glow end
 
-        local team_num = proc.read_int32(pawn_addr + offsets.m_iTeamNum)
+        local ent_team = proc.read_int32(pawn + offsets.m_iTeamNum)
+        local is_enemy = (ent_team ~= local_team)
+
+        local color_to_use = nil
         
-        local color = nil
-        if team_num == 2 then
-            color = t_color
-        elseif team_num == 3 then 
-            color = ct_color
+        if is_enemy and enemy_glow_on then
+            color_to_use = enemy_glow_color
+        elseif not is_enemy and team_glow_on then
+            color_to_use = team_glow_color
         end
 
-        if color then
-            local glow_addr = pawn_addr + offsets.m_Glow
-            local color_packed = to_argb(color[1], color[2], color[3], color[4])
+        if color_to_use then
+            local r, g, b, a = table.unpack(color_to_use)
+
+            local packed_color = (math.floor(a) << 24) | (math.floor(b) << 16) | (math.floor(g) << 8) | math.floor(r)
             
-            proc.write_int32(glow_addr + offsets.m_glowColorOverride, color_packed)
-            proc.write_int32(glow_addr + offsets.m_bGlowing, 1)
-            proc.write_int32(glow_addr + offsets.m_iGlowType, 3) 
+            local glow_offset = offsets.m_Glow 
+            
+
+            proc.write_int32(pawn + glow_offset + offsets.m_bGlowing, 1)     
+            proc.write_int32(pawn + glow_offset + offsets.m_iGlowType, 3)     -- Style
+            proc.write_int32(pawn + glow_offset + offsets.m_glowColorOverride, packed_color)
         end
 
         ::continue_glow::
@@ -5957,7 +7164,9 @@ local WEAPONS_MAP = {
     ["weapon_sg556"] = "SG 553", ["weapon_ssg08"] = "SSG 08", ["weapon_taser"] = "Zeus x27",
     ["weapon_tec9"] = "Tec-9", ["weapon_ump45"] = "UMP-45", ["weapon_usp_silencer"] = "USP-S",
     ["weapon_xm1014"] = "XM1014", ["weapon_aug"] = "AUG", ["weapon_bizon"] = "PP-Bizon",
-    ["weapon_cz75a"] = "CZ75-Auto", ["weapon_m249"] = "M249", ["weapon_revolver"] = "R8 Revolver"
+    ["weapon_cz75a"] = "CZ75-Auto", ["weapon_m249"] = "M249", ["weapon_revolver"] = "R8 Revolver",
+    ["weapon_c4"] = "C4", ["weapon_flashbang"] = "Flashbang", ["weapon_smokegrenade"] = "Smoke Grenade", ["weapon_molotov"] = "Molotov",
+    ["weapon_decoy"] = "Decoy Grenade", ["weapon_hegrenade"] = "High Explosive Grenade"
 }
 local PROJECTILES_MAP = {
     ["smokegrenade_projectile"] = "Smoke", ["flashbang_projectile"] = "Flashbang",
@@ -6086,12 +7295,16 @@ local function draw_dynamic_panel(screen_pos, name, dist_m, progress, accent_col
     render.draw_text(font_sub, dist_str, dist_x, dist_y, theme.text_dim[1], theme.text_dim[2], theme.text_dim[3], theme.text_dim[4], (morph_factor < 0.5 and 1 or 0), 0,0,0,150)
 end
 
-function handle_world_esp()
-    local should_draw_weapons = MenuLib.get_value("esp_dropped_weapons")
-    local should_draw_projectiles = MenuLib.get_value("esp_projectiles")
-    local should_draw_chickens = MenuLib.get_value("esp_chickens")
+_G.C4_Carrier_Handle = 0
 
-    if not should_draw_weapons and not should_draw_projectiles and not should_draw_chickens then return end
+function handle_world_esp()
+    local draw_weapons = MenuLib.get_value("esp_dropped_weapons")
+    local draw_nades = MenuLib.get_value("esp_projectiles")
+    local draw_bomb = MenuLib.get_value("esp_bomb")
+    local draw_chickens = MenuLib.get_value("esp_chickens")
+    local track_carrier = MenuLib.get_value("esp_c4_carrier")
+
+    if not (draw_weapons or draw_nades or draw_bomb or draw_chickens or track_carrier) then return end
     if not proc.is_attached() or proc.did_exit() then return end
 
     local client_dll = proc.find_module("client.dll")
@@ -6103,12 +7316,67 @@ function handle_world_esp()
     local local_origin = vec3(0,0,0)
     if local_pawn and local_pawn ~= 0 then
         local local_node = proc.read_int64(local_pawn + offsets.m_pGameSceneNode)
-        if local_node and local_node ~= 0 then local_origin = vec3.read_float(local_node + offsets.m_vecAbsOrigin) end
+        if local_node and local_node ~= 0 then 
+            local_origin = vec3.read_float(local_node + offsets.m_vecAbsOrigin) 
+        end
     end
 
     local view_matrix = {}
     for i = 0, 15 do table.insert(view_matrix, proc.read_float(client_dll + offsets.dwViewMatrix + (i * 4))) end
 
+    if draw_bomb then
+        local planted_ptr = proc.read_int64(client_dll + offsets.dwPlantedC4)
+        if planted_ptr and planted_ptr > 0 then
+            local planted_ent = proc.read_int64(planted_ptr)
+            if planted_ent and planted_ent > 0 then
+                local scene = proc.read_int64(planted_ent + offsets.m_pGameSceneNode)
+                if scene and scene > 0 then
+                    local pos = vec3.read_float(scene + offsets.m_vecAbsOrigin)
+                    local scr = world_to_screen(view_matrix, pos)
+                    
+                    if scr then
+                        local bomb_col = MenuLib.get_value("esp_bomb_color") or {255, 50, 50, 255}
+                        
+                        local blow_time = proc.read_float(planted_ent + offsets.m_flC4Blow)
+                        local timer_len = proc.read_float(planted_ent + offsets.m_flTimerLength)
+                        if timer_len < 10 then timer_len = 40.0 end
+
+                        local server_time = 0
+                        local g_ptr = proc.read_int64(client_dll + offsets.dwGlobalVars)
+                        local t_ptr = (g_ptr ~= 0) and proc.read_float(g_ptr + 0x2C) or 0
+                        
+                        if t_ptr > 0 and blow_time > t_ptr and (blow_time - t_ptr) < 100 then
+                            server_time = t_ptr
+                        end
+
+                        local time_left = 0
+                        local progress = 1.0
+                        local text = "PLANTED C4"
+
+                        if server_time > 0 and blow_time > 0 then
+                            time_left = math.max(0, blow_time - server_time)
+                            progress = math.max(0.0, math.min(1.0, time_left / timer_len))
+                            text = string.format("C4 (%.1fs)", time_left)
+                        else
+                            text = "C4 PLANTED"
+                        end
+                        
+                        local is_defused = proc.read_int8(planted_ent + offsets.m_bBombDefused) == 1
+                        if is_defused then
+                            text = "DEFUSED"
+                            progress = 0
+                            bomb_col = {0, 255, 0, 255}
+                        end
+
+                        local dist = get_distance_manual(pos, local_origin) / 39.37
+                        draw_dynamic_panel(scr, text, dist, progress, bomb_col, 1.0)
+                    end
+                end
+            end
+        end
+    end
+
+    local found_carrier_handle = 0
     local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
     if not entity_list or entity_list == 0 then return end
 
@@ -6118,96 +7386,91 @@ function handle_world_esp()
         local list_entry = proc.read_int64(entity_list + 0x8 * ((i >> 9) & 0x7F) + 0x10)
         if not list_entry or list_entry == 0 then goto continue_loop end
         
-     local entity = proc.read_int64(list_entry + 112 * (i & 0x1FF)) 
+        local entity = proc.read_int64(list_entry + 112 * (i & 0x1FF)) 
         if not entity or entity == 0 then goto continue_loop end
+        
         local owner_handle = proc.read_int32(entity + offsets.m_hOwnerEntity)
+        local is_dropped = (owner_handle == -1)
 
-        if (should_draw_weapons and owner_handle == -1) or should_draw_projectiles or should_draw_chickens then
-            local item_info_ptr = proc.read_int64(entity + 0x10)
-            if not item_info_ptr or item_info_ptr == 0 then goto continue_loop end
+        if not (draw_weapons or draw_nades or draw_bomb or draw_chickens or track_carrier) then goto continue_loop end
+        
+        local item_info = proc.read_int64(entity + 0x10)
+        if not item_info or item_info == 0 then goto continue_loop end
+        local item_type = proc.read_int64(item_info + 0x20)
+        if not item_type or item_type == 0 then goto continue_loop end
+        local name = proc.read_string(item_type, 128)
+        if not name or name == "" then goto continue_loop end
 
-            local item_type_ptr = proc.read_int64(item_info_ptr + 0x20)
-            if not item_type_ptr or item_type_ptr == 0 then goto continue_loop end
+        if name == "weapon_c4" and not is_dropped then
+            found_carrier_handle = owner_handle
+        end
+
+        if (not draw_weapons and not draw_bomb and not draw_nades and not draw_chickens) then goto continue_loop end
+        if not is_dropped and name ~= "weapon_c4" and not name:find("projectile") then goto continue_loop end
+
+        local scene = proc.read_int64(entity + offsets.m_pGameSceneNode)
+        if not scene or scene == 0 then goto continue_loop end
+        local origin = vec3.read_float(scene + offsets.m_vecAbsOrigin)
+        if math.abs(origin.x) < 1 then goto continue_loop end
+
+        local screen_pos = world_to_screen(view_matrix, origin)
+        local dist_m = get_distance_manual(origin, local_origin) / 39.37 
+
+        if screen_pos then
             
-            local designer_name = proc.read_string(item_type_ptr, 128)
-            if not designer_name or designer_name == "" then goto continue_loop end
-
-            local game_scene_node = proc.read_int64(entity + offsets.m_pGameSceneNode)
-            if not game_scene_node or game_scene_node == 0 then goto continue_loop end
+            if draw_bomb and name == "weapon_c4" and is_dropped then
+                local bcol = MenuLib.get_value("esp_bomb_color") or {255, 50, 50, 255}
+                draw_dynamic_panel(screen_pos, "Dropped C4", dist_m, 0, bcol, 1.0)
             
-            local entity_origin = vec3.read_float(game_scene_node + offsets.m_vecAbsOrigin)
-            if entity_origin.x == 0 and entity_origin.y == 0 and entity_origin.z == 0 then goto continue_loop end
-
-            local screen_pos = world_to_screen(view_matrix, entity_origin)
-            local dist_m = get_distance_manual(entity_origin, local_origin) / 39.37 
-
-            if should_draw_weapons and owner_handle == -1 then
-                if screen_pos and WEAPONS_MAP[designer_name] then
-                    draw_dynamic_panel(screen_pos, WEAPONS_MAP[designer_name], dist_m, 0, theme.text, 0.0)
-                end
-            end
-
-
-            if should_draw_projectiles then
-
-                if designer_name:find("_projectile") then
-                    current_frame_grenades[i] = { name = designer_name, pos = entity_origin, index = i }
-                end
-
+            elseif draw_weapons and is_dropped and name ~= "weapon_c4" and WEAPONS_MAP[name] then
+                draw_dynamic_panel(screen_pos, WEAPONS_MAP[name], dist_m, 0, theme.text, 0.0)
+            
+            elseif draw_nades and name:find("_projectile") then
+                current_frame_grenades[i] = { name = name, pos = origin, index = i }
                 if not grenade_anim_states[i] then grenade_anim_states[i] = 0.0 end
 
-                if screen_pos then
-                    if designer_name == "smokegrenade_projectile" then
-                        local vel = vec3.read_float(entity + offsets.m_vecVelocity)
-                        local speed = math.sqrt(vel.x^2 + vel.y^2 + vel.z^2)
-                        
-                        local is_landed = (speed < 15) or (grenade_start_times[entity] and speed < 100)
-                        local target_morph = is_landed and 1.0 or 0.0
-                        
-                        grenade_anim_states[i] = lerp(grenade_anim_states[i], target_morph, 0.15) 
+                if name == "smokegrenade_projectile" then
+                    local vel = vec3.read_float(entity + offsets.m_vecVelocity)
+                    local speed = math.sqrt(vel.x^2 + vel.y^2 + vel.z^2)
+                    local is_landed = (speed < 15) or (grenade_start_times[entity] and speed < 100)
+                    local target = is_landed and 1.0 or 0.0
+                    
+                    grenade_anim_states[i] = lerp(grenade_anim_states[i], target, 0.15) 
 
-                        if not is_landed then
-                            grenade_start_times[entity] = nil
-                            draw_dynamic_panel(screen_pos, "Smoke", dist_m, 0, theme.smoke_acc, grenade_anim_states[i])
-                        else
-                            local max_duration = 21.5
-                            if not grenade_start_times[entity] then grenade_start_times[entity] = now end
-                            local elapsed = (now - grenade_start_times[entity]) / 1000.0
-                            local progress = math.max(0, 1 - (elapsed / max_duration))
-                            if progress > 0 then
-                                draw_dynamic_panel(screen_pos, "Smoke", dist_m, progress, theme.smoke_acc, grenade_anim_states[i])
-                            end
+                    if is_landed then
+                        local max_dur = 21.5
+                        if not grenade_start_times[entity] then grenade_start_times[entity] = now end
+                        local prog = math.max(0, math.min(1, 1 - ((now - grenade_start_times[entity]) / 1000.0 / max_dur)))
+                        if prog > 0 then
+                            draw_dynamic_panel(screen_pos, "Smoke", dist_m, prog, theme.smoke_acc, grenade_anim_states[i])
                         end
-
-                    elseif designer_name == "molotov_projectile" or designer_name == "incendiarygrenade_projectile" then
-                        grenade_anim_states[i] = lerp(grenade_anim_states[i], 0.0, 0.2)
-                        local label = (designer_name == "molotov_projectile") and "Molotov" or "Incendiary"
-                        draw_dynamic_panel(screen_pos, label, dist_m, 0, theme.fire_acc, grenade_anim_states[i])
-
-                    elseif designer_name == "decoy_projectile" then
-                        grenade_anim_states[i] = lerp(grenade_anim_states[i], 1.0, 0.15)
-                        draw_dynamic_panel(screen_pos, "Decoy", dist_m, 1.0, theme.decoy_acc, grenade_anim_states[i])
-
-                    elseif designer_name == "flashbang_projectile" then
-                        grenade_anim_states[i] = lerp(grenade_anim_states[i], 0.0, 0.2)
-                        draw_dynamic_panel(screen_pos, "Flash", dist_m, 0, theme.flash_acc, grenade_anim_states[i])
-                    elseif designer_name == "hegrenade_projectile" then
-                        grenade_anim_states[i] = lerp(grenade_anim_states[i], 0.0, 0.2)
-                        draw_dynamic_panel(screen_pos, "HE", dist_m, 0, theme.he_acc, grenade_anim_states[i])
+                    else
+                        grenade_start_times[entity] = nil
+                        draw_dynamic_panel(screen_pos, "Smoke", dist_m, 0, theme.smoke_acc, grenade_anim_states[i])
                     end
+
+                elseif name == "molotov_projectile" or name == "incendiarygrenade_projectile" then
+                    grenade_anim_states[i] = lerp(grenade_anim_states[i], 0.0, 0.2)
+                    local label = (name == "molotov_projectile") and "Molotov" or "Incendiary"
+                    draw_dynamic_panel(screen_pos, label, dist_m, 0, theme.fire_acc, grenade_anim_states[i])
+
+                elseif name == "decoy_projectile" then
+                    draw_dynamic_panel(screen_pos, "Decoy", dist_m, 1.0, theme.decoy_acc, 1.0)
+                elseif name == "flashbang_projectile" then
+                    draw_dynamic_panel(screen_pos, "Flash", dist_m, 0, theme.flash_acc, 1.0)
+                elseif name == "hegrenade_projectile" then
+                    draw_dynamic_panel(screen_pos, "HE", dist_m, 0, theme.he_acc, 1.0)
                 end
-            end
             
-            if should_draw_chickens and designer_name == "chicken" and screen_pos then
-                draw_dynamic_panel(screen_pos, "Chicken", dist_m, 0, {200, 200, 200, 255}, 0.0)
+            elseif draw_chickens and name == "chicken" then
+                draw_dynamic_panel(screen_pos, "Chicken", dist_m, 0, {200,200,200,255}, 0.0)
             end
         end
-        
+
         ::continue_loop::
     end
 
     local MOLOTOV_DURATION_MS = 7000 
-
     for idx, g_data in pairs(last_frame_grenades) do
         if not current_frame_grenades[idx] then
             if g_data.name == "molotov_projectile" or g_data.name == "incendiarygrenade_projectile" then
@@ -6218,12 +7481,10 @@ function handle_world_esp()
                     name = (g_data.name == "molotov_projectile") and "Molotov" or "Incendiary",
                     color = theme.fire_acc
                 }
-
                 grenade_anim_states[idx] = 0.0
             end
         end
     end
-
     last_frame_grenades = current_frame_grenades
 
     for idx, inferno in pairs(predicted_infernos) do
@@ -6235,12 +7496,10 @@ function handle_world_esp()
             grenade_anim_states[idx] = lerp(grenade_anim_states[idx], 1.0, 0.1)
 
             local screen_pos = world_to_screen(view_matrix, inferno.pos)
-            
             if screen_pos then
                 local dist_m = get_distance_manual(inferno.pos, local_origin) / 39.37
                 local remaining = inferno.expiration - now
-                local progress = math.max(0, remaining / MOLOTOV_DURATION_MS)
-                
+                local progress = math.max(0.0, math.min(1.0, remaining / MOLOTOV_DURATION_MS)) 
                 draw_dynamic_panel(screen_pos, inferno.name, dist_m, progress, inferno.color, grenade_anim_states[idx])
             end
         end
@@ -6253,6 +7512,8 @@ function handle_world_esp()
             end
         end
     end
+
+    _G.C4_Carrier_Handle = found_carrier_handle
 end
 
 
@@ -6570,14 +7831,27 @@ function handle_aimbot(game, local_player_index, current_weapon_category)
             end
         end
     end
-
-    if best_target then
+if best_target then
         local dx = best_target.pos.x - cx
         local dy = best_target.pos.y - cy
+        
+
+        local fps_scaling = 144 / math.max(30, render.get_fps())
+        local final_smooth = smoothing * fps_scaling
 
 
-        local move_x = dx / smoothing
-        local move_y = dy / smoothing
+        if not globals.aimbot_state.rnd_x or (winapi.get_tickcount64() % 15 == 0) then
+            globals.aimbot_state.rnd_x = math.random(-2, 2)
+            globals.aimbot_state.rnd_y = math.random(-2, 2)
+        end
+
+        local move_x = (dx + globals.aimbot_state.rnd_x) / final_smooth
+        local move_y = (dy + globals.aimbot_state.rnd_y) / final_smooth
+
+        if math.abs(dx) < 2 and math.abs(dy) < 2 then
+            move_x = 0
+            move_y = 0
+        end
 
         if math.abs(move_x) >= 1 or math.abs(move_y) >= 1 then
             input.simulate_mouse(math.floor(move_x), math.floor(move_y), 1)
@@ -6672,6 +7946,11 @@ function draw_recoil_crosshair(game)
         return
     end
 
+    if game.local_pawn and game.local_pawn ~= 0 then
+        local is_scoped = proc.read_int8(game.local_pawn + offsets.m_bIsScoped) > 0
+        if is_scoped then return end
+    end
+
     local shots_fired = proc.read_int32(game.local_pawn + offsets.m_iShotsFired)
     if not shots_fired or shots_fired < 1 then
         return
@@ -6684,15 +7963,15 @@ function draw_recoil_crosshair(game)
     if not aim_punch then return end
 
     local recoil_scale = 2.0
-    
-    local punch_x_pixels = aim_punch.y * recoil_scale * 5.7 
-    local punch_y_pixels = aim_punch.x * recoil_scale * 6.7
+    local punch_x_pixels = aim_punch.y * recoil_scale * 11.4
+    local punch_y_pixels = aim_punch.x * recoil_scale * 11.4
     
     local dot_x = screen_center_x - punch_x_pixels
     local dot_y = screen_center_y + punch_y_pixels
     
     local r, g, b, a = table.unpack(MenuLib.get_value("recoil_dot_color"))
     
+    render.draw_circle(dot_x, dot_y, 3, 0, 0, 0, 255, 0, true)
     render.draw_circle(dot_x, dot_y, 2, r, g, b, a, 0, true)
 end
 
@@ -6778,95 +8057,147 @@ end
 
 
 
-local function handle_ragebot()
 
-    if not proc.is_attached() or proc.did_exit() then return end
-    if not MenuLib.get_value("rage_enabled") or not is_keybind_active("rage_key") then return end
 
-    local client_dll = proc.find_module("client.dll"); if not client_dll then return end
-    
-    local local_player_pawn = proc.read_int64(client_dll + offsets.dwLocalPlayerPawn)
-    if not local_player_pawn or local_player_pawn == 0 then return end
 
-    local local_origin_node = proc.read_int64(local_player_pawn + offsets.m_pGameSceneNode)
-    if not local_origin_node or local_origin_node == 0 then return end
-    local local_origin = vec3.read_float(local_origin_node + offsets.m_nodeToWorld)
-    local view_offset = vec3.read_float(local_player_pawn + offsets.m_vecViewOffset)
-    local camera_pos = local_origin + view_offset
 
-    local screen_w, screen_h = render.get_viewport_size()
-    local crosshair_pos = vec2(screen_w / 2, screen_h / 2)
-    local fov_radius = MenuLib.get_value("rage_fov")
-    
-    if MenuLib.get_value("rage_show_fov") then render.draw_circle(crosshair_pos.x, crosshair_pos.y, fov_radius, 255, 0, 0, 100, 1.5, false) end
-
-    local best_target = { distance = fov_radius + 1, bone_pos = nil }
-    local view_matrix_addr = client_dll + offsets.dwViewMatrix
-    local entity_list_addr = proc.read_int64(client_dll + offsets.dwEntityList)
-
-    for i = 1, 64 do
-        local player_pawn = 0
-        local list_entry = proc.read_int64(entity_list_addr + 0x8 * ((i >> 9) & 0x7F) + 0x10)
-        if list_entry and list_entry ~= 0 then
-            local player_controller = proc.read_int64(list_entry + 112 * (i & 0x1FF))
-            if player_controller and player_controller ~= 0 then
-                local pawn_handle = proc.read_int32(player_controller + offsets.m_hPlayerPawn)
-                if pawn_handle and pawn_handle ~= -1 then
-                    local pawn_handle_masked = pawn_handle & 0x7FFF
-                    local list_entry2 = proc.read_int64(entity_list_addr + 0x8 * ((pawn_handle_masked >> 9) & 0x7F) + 0x10)
-                    if list_entry2 and list_entry2 ~= 0 then
-                        player_pawn = proc.read_int64(list_entry2 + 112 * (pawn_handle_masked & 0x1FF))
-                    end
-                end
-            end
-        end
-     
-        if player_pawn and player_pawn ~= 0 and player_pawn ~= local_player_pawn then
-            if proc.read_int32(player_pawn + offsets.m_iHealth) > 0 and proc.read_int32(player_pawn + offsets.m_iTeamNum) ~= proc.read_int32(local_player_pawn + offsets.m_iTeamNum) then
-
-                local head_pos = nil
-                local game_scene_node = proc.read_int64(player_pawn + offsets.m_pGameSceneNode)
-                if game_scene_node and game_scene_node ~= 0 then
-                    local bone_array_ptr = proc.read_int64(game_scene_node + offsets.m_modelState + offsets.m_boneArray)
-                    if bone_array_ptr and bone_array_ptr ~= 0 then
-                        head_pos = vec3.read_float(bone_array_ptr + BONE_MAP.head * 32)
-                    end
-                end
-
-                if head_pos then
-                    local screen_pos = world_to_screen_manual(view_matrix_addr, head_pos)
-                    if screen_pos then
-                        local distance = screen_pos:distance(crosshair_pos)
-                        if distance < best_target.distance then
-                            best_target = { distance = distance, bone_pos = head_pos }
-                        end
-                    end
-                end
-            end
-        end
+local function get_planted_bomb_info(client_dll)
+    if not is_bomb_planted_gamerules(client_dll) then
+        planted_bomb_state.last_entity = 0; planted_bomb_state.last_pos = nil; return nil
     end
 
-    if best_target.bone_pos then
-        local direction = (best_target.bone_pos - camera_pos):normalize()
-        direction.z = math.clamp(direction.z, -1.0, 1.0)
-        
-        local pitch = -math.deg(math.asin(direction.z))
-        local yaw = math.deg(vec2(direction.x, direction.y):angle())
-        
-        local new_angles = vec3(pitch, yaw, 0)
-        new_angles.x = math.clamp(new_angles.x, -89.0, 89.0)
-        new_angles.y = math.wrap(new_angles.y, -180.0, 180.0)
-        new_angles.z = 0 
-        
-        vec3.write_float(client_dll + offsets.dwViewAngles, new_angles)
+    local c4_ptr = proc.read_int64(client_dll + offsets.dwPlantedC4)
+    if not c4_ptr or c4_ptr == 0 then return nil end
+    
+    local c4_entity = proc.read_int64(c4_ptr)
+    if not c4_entity or c4_entity == 0 then return nil end
+
+    if planted_bomb_state.last_entity ~= 0 and planted_bomb_state.last_entity ~= c4_entity then
+        planted_bomb_state.last_entity = 0; return nil
     end
+
+    local defused = proc.read_int8(c4_entity + offsets.m_bBombDefused)
+    if defused == 1 then
+   
+         return { active=true, is_defused=true } 
+    end
+
+    local server_time = get_server_time(client_dll)
+    if server_time <= 0 then return nil end
+
+    local blow_time = proc.read_float(c4_entity + offsets.m_flC4Blow)
+    if not is_valid_number(blow_time) or blow_time <= 0 then return nil end
+
+    local time_left = blow_time - server_time
+    if time_left > 65 then return nil end 
+
+    local game_scene = proc.read_int64(c4_entity + offsets.m_pGameSceneNode)
+    local pos = {x=0,y=0,z=0}
+    if game_scene ~= 0 then
+        pos = vec3.read_float(game_scene + offsets.m_vecAbsOrigin)
+    end
+    
+    if planted_bomb_state.last_pos then
+        local dx = pos.x - planted_bomb_state.last_pos.x
+        local dy = pos.y - planted_bomb_state.last_pos.y
+        local dist_sq = dx*dx + dy*dy
+        if dist_sq > 250000 then
+            planted_bomb_state.last_entity = 0
+            return nil
+        end
+    end
+    
+    planted_bomb_state.last_entity = c4_entity
+    planted_bomb_state.last_pos = pos
+    planted_bomb_state.last_blow_time = blow_time
+
+    local is_defusing = proc.read_int8(c4_entity + offsets.m_bBeingDefused) == 1
+    local defuse_left, defuse_len = 0, 0
+    if is_defusing then
+        defuse_len = proc.read_float(c4_entity + offsets.m_flDefuseLength)
+        local defuse_end = proc.read_float(c4_entity + offsets.m_flDefuseCountDown)
+        defuse_left = math.max(0, defuse_end - server_time)
+    end
+    
+    local timer_length = proc.read_float(c4_entity + offsets.m_flTimerLength)
+    if timer_length <= 0 then timer_length = 40.0 end
+    
+    local site_id = proc.read_int32(c4_entity + offsets.m_nBombSite)
+    
+    return {
+        active = true,
+        site = (site_id == 1) and "B" or "A",
+        time_left = math.max(0, time_left),
+        max_time = timer_length,
+        is_defusing = is_defusing,
+        defuse_left = defuse_left,
+        defuse_max = defuse_len > 0 and defuse_len or 10,
+        can_defuse = is_defusing and (defuse_left < time_left),
+        is_defused = false
+    }
 end
 
+-- function handle_c4data()
+--     local client = proc.find_module("client.dll")
+--     if not client then return end
+    
+--     local c4 = get_planted_bomb_info(client) 
+    
+--     if not MenuLib.get_value("misc_c4timer") then return end
+--     if not c4 or not c4.active then return end
+--     if c4.is_defused and c4.time_left <= 0 then return end 
 
-if _G.g_spin_yaw == nil then
-    _G.g_spin_yaw = 0
-end
+--     if not bombpanel_dragging then
+--         bombpanel_drag_x, bombpanel_drag_y = parse_pos(MenuLib.get_value("pos_bomb"))
+--     end
+--     local bx, by = bombpanel_drag_x, bombpanel_drag_y
+--     local bw, bh = 220, 75
 
+--     local mx, my = input.get_mouse_position()
+--     if input.is_key_pressed(1) and mx>=bx and mx<=bx+bw and my>=by and my<=by+bh and not bombpanel_dragging then
+--         bombpanel_dragging = true; bombpanel_drag_offset_x = mx - bx; bombpanel_drag_offset_y = my - by
+--     end
+--     if bombpanel_dragging then
+--         if not input.is_key_down(1) then bombpanel_dragging = false
+--         else 
+--             local nx,ny = mx - bombpanel_drag_offset_x, my - bombpanel_drag_offset_y
+--             MenuLib.set_value("pos_bomb", string.format("%d,%d", nx, ny))
+--             bx, by = nx, ny
+--         end
+--     end
+
+--     render.draw_rectangle(bx, by, bw, bh, 22, 23, 27, 220, 0, true, 6)
+--     render.draw_rectangle(bx, by, bw, bh, 60, 60, 70, 255, 1, false, 6)
+    
+--     local icon_col = {255, 50, 50}
+--     if c4.is_defusing then icon_col = c4.can_defuse and {100, 255, 100} or {255, 255, 100} end
+--     if c4.is_defused then icon_col = {0, 255, 0} end
+
+--     local title_txt = c4.is_defused and "Bomb Defused" or ("Planted - Site " .. c4.site)
+--     render.draw_circle(bx + 15, by + 15, 5, icon_col[1], icon_col[2], icon_col[3], 255, 0, true)
+--     render.draw_text(Menu.fonts.group, title_txt, bx + 28, by + 8, 255, 255, 255, 255, 0,0,0,0,0)
+
+--     if not c4.is_defused then
+--         local time_str = string.format("%.1fs", c4.time_left)
+--         local tw = render.measure_text(Menu.fonts.group, time_str)
+--         render.draw_text(Menu.fonts.group, time_str, bx + bw - tw - 12, by + 8, 255, 255, 255, 255, 0,0,0,0,0)
+
+--         local bar_x = bx + 12; local bar_y = by + 30; local bar_w = bw - 24; local bar_h = 6
+--         local pct = math.clamp(c4.time_left / c4.max_time, 0, 1)
+--         render.draw_rectangle(bar_x, bar_y, bar_w, bar_h, 40, 40, 45, 255, 0, true, 3)
+--         render.draw_rectangle(bar_x, bar_y, bar_w * pct, bar_h, icon_col[1], icon_col[2], icon_col[3], 255, 0, true, 3)
+        
+--         if c4.is_defusing then
+--             local def_txt = c4.can_defuse and ("Defusing: " .. string.format("%.1f", c4.defuse_left) .. "s") or "NO TIME!"
+--             local d_col = c4.can_defuse and {150, 255, 150} or {255, 100, 100}
+--             render.draw_text(Menu.fonts.main, def_txt, bx + 12, by + 42, d_col[1], d_col[2], d_col[3], 255, 0,0,0,0,0)
+            
+--             local dpct = math.clamp(1 - (c4.defuse_left / c4.defuse_max), 0, 1)
+--             render.draw_rectangle(bar_x, by+58, bar_w, bar_h, 40, 40, 45, 255, 0, true, 3)
+--             render.draw_rectangle(bar_x, by+58, bar_w * dpct, bar_h, d_col[1], d_col[2], d_col[3], 255, 0, true, 3)
+--         end
+--     end
+-- end
 
 
 
@@ -6901,9 +8232,49 @@ local function handle_movement()
 end
 
 
+
+
 local DEBUG_MODE = true
 
 engine.register_on_engine_tick(function()
+
+
+
+     if _chams_needs_reset then
+        if _reset_timer == 0 then
+            _reset_timer = winapi.get_tickcount64()
+        end
+        
+        if (winapi.get_tickcount64() - _reset_timer) < 200 then
+            local client_dll = proc.find_module("client.dll")
+            local entity_list = proc.read_int64(client_dll + offsets.dwEntityList)
+            
+            if entity_list and entity_list ~= 0 then
+                for i = 1, 64 do
+                    local list_entry = proc.read_int64(entity_list + 0x8 * ((i & 0x7FFF) >> 9) + 16)
+                    if list_entry ~= 0 then
+                        local controller = proc.read_int64(list_entry + 112 * (i & 0x1FF))
+                        if controller ~= 0 then
+                            local pawn_handle = proc.read_int32(controller + offsets.m_hPlayerPawn)
+                            if pawn_handle ~= 0 then
+                                local list_entry2 = proc.read_int64(entity_list + 0x8 * ((pawn_handle & 0x7FFF) >> 9) + 16)
+                                if list_entry2 ~= 0 then
+                                    local pawn = proc.read_int64(list_entry2 + 112 * (pawn_handle & 0x1FF))
+                                    if pawn ~= 0 then
+                                        proc.write_int8(pawn + 0x3D94, 0) 
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            return -- STOP HERE: Don't run the rest of the cheat logic during reset
+        else
+            _chams_needs_reset = false -- Reset complete, resume normal function
+            engine.log("Chams Reset Complete.", 0, 255, 0, 255)
+        end
+    end
 
     --draw_triggerbot_debug_info()
     update_triggerbot_ui_visibility()
@@ -6992,12 +8363,9 @@ local weapon_id = get_active_weapon_id(game.local_pawn, game.entity_list)
     handle_triggerbot(weapon_category, game)
         draw_recoil_crosshair(game)
     draw_sniper_crosshair(game)
+    draw_general_crosshair(game)
     handle_world_esp()
-    handle_movement()
-handle_ragebot()
-
- handle_dragging()
-    update_data()
+    handle_movement()handle_dragging()   update_data()
     update_dynamic_scale()
     draw_modern_radar(game)
     handle_anti_flash() 
@@ -7005,6 +8373,10 @@ handle_ragebot()
     handle_smoke_modulator()
     update_glow()
     draw_feature_indicators()
+        draw_spectators()
+        draw_dynamic_hitmarker() 
+        DrawVelocityGraph(game.local_pawn)
+        handle_c4data()
 end)
 
 
